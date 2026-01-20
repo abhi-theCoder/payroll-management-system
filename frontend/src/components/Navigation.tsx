@@ -12,13 +12,38 @@ export const Navigation = () => {
   const { logout } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
 
   const navigationItems = [
     { href: '/dashboard', label: 'Dashboard', icon: '📊' },
-    { href: '/dashboard/employees', label: 'Employees', icon: '👥' },
-    { href: '/dashboard/salary', label: 'Salary', icon: '💼' },
-    { href: '/dashboard/payroll', label: 'Payroll', icon: '📋' },
-    { href: '/dashboard/reports', label: 'Reports', icon: '📈' },
+    {
+      label: 'HR Management',
+      icon: '👥',
+      submenu: [
+        { href: '/dashboard/employees', label: 'Employees' },
+        { href: '/dashboard/attendance', label: 'Attendance' },
+        { href: '/dashboard/leave', label: 'Leave Management' },
+      ],
+    },
+    {
+      label: 'Payroll',
+      icon: '💰',
+      submenu: [
+        { href: '/dashboard/salary', label: 'Salary Structure' },
+        { href: '/dashboard/payroll', label: 'Payroll Processing' },
+        { href: '/dashboard/payslips', label: 'Payslips' },
+      ],
+    },
+    {
+      label: 'Operations',
+      icon: '⚙️',
+      submenu: [
+        { href: '/dashboard/reports', label: 'Reports' },
+        { href: '/dashboard/compliance', label: 'Compliance' },
+        { href: '/dashboard/settings', label: 'Settings' },
+      ],
+    },
+    { href: '/dashboard/profile', label: 'Profile', icon: '👤' },
   ];
 
   const isActive = (href: string) => {
@@ -59,21 +84,52 @@ export const Navigation = () => {
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-8">
-              {navigationItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition ${
-                    isActive(item.href)
-                      ? 'bg-primary-50 text-primary-600 border-b-2 border-primary-600'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }`}
-                >
-                  <span>{item.icon}</span>
-                  <span>{item.label}</span>
-                </Link>
-              ))}
+            <div className="hidden md:flex items-center gap-1">
+              {navigationItems.map((item) => {
+                if ('submenu' in item) {
+                  return (
+                    <div key={item.label} className="relative group">
+                      <button className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition">
+                        <span>{item.icon}</span>
+                        <span>{item.label}</span>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                      </button>
+                      <div className="absolute left-0 mt-0 w-48 bg-white rounded-md shadow-lg hidden group-hover:block z-50 py-2 border border-gray-200">
+                        {item.submenu.map((subitem) => (
+                          <Link
+                            key={subitem.href}
+                            href={subitem.href}
+                            className={`block px-4 py-2 text-sm transition ${
+                              isActive(subitem.href)
+                                ? 'bg-primary-50 text-primary-600 font-medium'
+                                : 'text-gray-700 hover:bg-gray-50'
+                            }`}
+                          >
+                            {subitem.label}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition ${
+                      isActive(item.href)
+                        ? 'bg-primary-50 text-primary-600 border-b-2 border-primary-600'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span>{item.icon}</span>
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
             </div>
 
             {/* Right side - Logout button and mobile menu */}
@@ -115,21 +171,66 @@ export const Navigation = () => {
         {isMobileMenuOpen && (
           <div className="md:hidden bg-white border-t">
             <div className="px-2 pt-2 pb-3 space-y-1">
-              {navigationItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-md text-base font-medium transition ${
-                    isActive(item.href)
-                      ? 'bg-primary-50 text-primary-600'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }`}
-                >
-                  <span>{item.icon}</span>
-                  <span>{item.label}</span>
-                </Link>
-              ))}
+              {navigationItems.map((item) => {
+                if ('submenu' in item) {
+                  const isExpanded = expandedMenu === item.label;
+                  return (
+                    <div key={item.label}>
+                      <button
+                        onClick={() => setExpandedMenu(isExpanded ? null : item.label)}
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span>{item.icon}</span>
+                          <span>{item.label}</span>
+                        </div>
+                        <svg
+                          className={`w-4 h-4 transition transform ${isExpanded ? 'rotate-180' : ''}`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                      </button>
+                      {isExpanded && (
+                        <div className="bg-gray-50">
+                          {item.submenu.map((subitem) => (
+                            <Link
+                              key={subitem.href}
+                              href={subitem.href}
+                              onClick={() => setIsMobileMenuOpen(false)}
+                              className={`block px-6 py-2 text-sm font-medium transition ${
+                                isActive(subitem.href)
+                                  ? 'bg-primary-100 text-primary-600'
+                                  : 'text-gray-600 hover:bg-gray-100'
+                              }`}
+                            >
+                              {subitem.label}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-md text-base font-medium transition ${
+                      isActive(item.href)
+                        ? 'bg-primary-50 text-primary-600'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span>{item.icon}</span>
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
             </div>
             <div className="px-2 py-3 border-t">
               <Button

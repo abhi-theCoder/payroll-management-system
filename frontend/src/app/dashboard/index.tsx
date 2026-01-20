@@ -2,7 +2,6 @@
 
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { ProfessionalDashboard } from '@/components/ProfessionalDashboard';
-import { Button } from '@/components/ui/Button';
 
 export default function DashboardPage() {
   return (
@@ -11,4 +10,3 @@ export default function DashboardPage() {
     </DashboardLayout>
   );
 }
-         
