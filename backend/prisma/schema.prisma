@@ -1,0 +1,394 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+}
+
+// ==================== USER & AUTH ====================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  firstName     String
+  lastName      String
+  role          String    @default("EMPLOYEE") // ADMIN, HR, ACCOUNTS, EMPLOYEE, MANAGER
+  active        Boolean   @default(true)
+  lastLogin     DateTime?
+  loginAttempts Int       @default(0)
+  lockedUntil   DateTime?
+
+  // Relations
+  employee      Employee?
+  auditLogs     AuditLog[]
+  tokenBlacklist TokenBlacklist[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([role])
+}
+
+model TokenBlacklist {
+  id    String   @id @default(cuid())
+  token String   @unique
+  user  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  expiresAt DateTime
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// ==================== EMPLOYEE ====================
+
+model Employee {
+  id                    String   @id @default(cuid())
+  employeeId            String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                String   @unique
+  
+  firstName             String
+  lastName              String
+  email                 String
+  phone                 String?
+  dateOfBirth           DateTime?
+  gender                String?
+  maritalStatus         String?
+  
+  // Employment Details
+  department            String?
+  designation           String?
+  reportingManager      String?
+  dateOfJoining         DateTime
+  dateOfLeaving         DateTime?
+  employmentType        String   @default("PERMANENT") // PERMANENT, CONTRACT, TEMPORARY
+  
+  // Address
+  addressLine1          String?
+  addressLine2          String?
+  city                  String?
+  state                 String?
+  zipCode               String?
+  country               String?
+  
+  // Tax & Compliance
+  panNumber             String?
+  aadharNumber          String?
+  accountNumber         String?
+  ifscCode              String?
+  uanNumber             String?
+  esicNumber            String?
+  
+  // Status
+  status                String   @default("ACTIVE") // ACTIVE, INACTIVE, LEFT
+  
+  // Relations
+  salaryStructures      SalaryStructure[]
+  payrolls              Payroll[]
+  payslips              Payslip[]
+  attendance            Attendance[]
+  leaves                Leave[]
+  taxDeclarations       TaxDeclaration[]
+  complianceRecords     ComplianceRecord[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([department])
+  @@index([status])
+  @@index([dateOfJoining])
+}
+
+// ==================== SALARY STRUCTURE ====================
+
+model SalaryStructure {
+  id                String    @id @default(cuid())
+  employee          Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId        String
+  
+  name              String
+  effectiveFrom     DateTime
+  effectiveUntil    DateTime?
+  
+  // Salary Details
+  basicSalary       Float
+  ctc               Float
+  hra               Float?
+  dearness          Float?
+  conveyance        Float?
+  medical           Float?
+  other             Float?
+  
+  // Relations
+  components        SalaryComponent[]
+  payrolls          Payroll[]
+  
+  isActive          Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([employeeId])
+  @@index([effectiveFrom])
+  @@index([isActive])
+}
+
+model SalaryComponent {
+  id                String    @id @default(cuid())
+  salaryStructure   SalaryStructure @relation(fields: [salaryStructureId], references: [id], onDelete: Cascade)
+  salaryStructureId String
+  
+  name              String
+  type              String    // EARNING, DEDUCTION, REIMBURSEMENT
+  calculationType   String    // FIXED, PERCENTAGE, FORMULA
+  value             Float
+  formula           String?   // For formula-based calculations
+  dependsOn         String?   // Field name it depends on
+  
+  isOptional        Boolean   @default(false)
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([salaryStructureId])
+  @@index([type])
+}
+
+// ==================== PAYROLL ====================
+
+model Payroll {
+  id                    String    @id @default(cuid())
+  employee              Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId            String
+  
+  salaryStructure       SalaryStructure @relation(fields: [salaryStructureId], references: [id])
+  salaryStructureId     String
+  
+  month                 Int       // 1-12
+  year                  Int
+  status                String    @default("DRAFT") // DRAFT, PROCESSING, PROCESSED, LOCKED, REJECTED
+  
+  // Salary Calculations
+  basicSalary           Float
+  earnings              Float
+  deductions            Float
+  grossSalary           Float
+  netSalary             Float
+  
+  // Compliance Deductions
+  pfDeduction           Float     @default(0)
+  esiDeduction          Float     @default(0)
+  ptDeduction           Float     @default(0)
+  tdsDeduction          Float     @default(0)
+  
+  // Attendance
+  daysWorked            Float
+  daysPresent           Float
+  daysAbsent            Float
+  daysLeave             Float
+  
+  // Relations
+  payslip               Payslip?
+  payrollComponents     PayrollComponent[]
+  complianceRecords     ComplianceRecord[]
+  
+  // Metadata
+  lockedAt              DateTime?
+  processedAt           DateTime?
+  rejectionReason       String?
+  remarks               String?
+  
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@unique([employeeId, month, year])
+  @@index([employeeId])
+  @@index([month, year])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model PayrollComponent {
+  id            String    @id @default(cuid())
+  payroll       Payroll   @relation(fields: [payrollId], references: [id], onDelete: Cascade)
+  payrollId     String
+  
+  componentName String
+  amount        Float
+  type          String    // EARNING, DEDUCTION
+  
+  createdAt     DateTime  @default(now())
+
+  @@index([payrollId])
+}
+
+// ==================== PAYSLIP ====================
+
+model Payslip {
+  id            String    @id @default(cuid())
+  payroll       Payroll   @relation(fields: [payrollId], references: [id], onDelete: Cascade)
+  payrollId     String    @unique
+  
+  employee      Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId    String
+  
+  status        String    @default("GENERATED") // GENERATED, SENT, VIEWED, DOWNLOADED
+  pdfUrl        String?
+  
+  sentAt        DateTime?
+  viewedAt      DateTime?
+  downloadedAt  DateTime?
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([employeeId])
+  @@index([status])
+}
+
+// ==================== ATTENDANCE ====================
+
+model Attendance {
+  id            String    @id @default(cuid())
+  employee      Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId    String
+  
+  date          DateTime
+  status        String    // PRESENT, ABSENT, HALF_DAY, LEAVE, HOLIDAY, WEEKEND
+  remarks       String?
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([employeeId, date])
+  @@index([employeeId])
+  @@index([date])
+}
+
+// ==================== LEAVE ====================
+
+model Leave {
+  id            String    @id @default(cuid())
+  employee      Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId    String
+  
+  leaveType     String    // CASUAL, SICK, EARNED, MATERNITY, PATERNITY, UNPAID
+  startDate     DateTime
+  endDate       DateTime
+  daysUsed      Float
+  status        String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  remarks       String?
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([employeeId])
+  @@index([status])
+}
+
+// ==================== COMPLIANCE ====================
+
+model ComplianceRecord {
+  id            String    @id @default(cuid())
+  employee      Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId    String
+  
+  payroll       Payroll?  @relation(fields: [payrollId], references: [id], onDelete: SetNull)
+  payrollId     String?
+  
+  complianceType String   // PF, ESI, PT, TDS
+  amount        Float
+  month         Int
+  year          Int
+  
+  filedAt       DateTime?
+  status        String    @default("PENDING") // PENDING, FILED, ACKNOWLEDGED
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([employeeId, complianceType, month, year])
+  @@index([employeeId])
+  @@index([complianceType])
+}
+
+// ==================== TAX ====================
+
+model TaxDeclaration {
+  id                String    @id @default(cuid())
+  employee          Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId        String
+  
+  financialYear     String    // e.g., "2024-2025"
+  
+  // Section-wise declarations
+  section80C        Float     @default(0)  // Investments
+  section80D        Float     @default(0)  // Medical Insurance
+  section80E        Float     @default(0)  // Education Loan
+  section80G        Float     @default(0)  // Charity
+  section80TTA       Float     @default(0)  // Savings Account Interest
+  
+  totalExemptions   Float     @default(0)
+  estimatedTax      Float     @default(0)
+  
+  declarationDate   DateTime  @default(now())
+  verificationDate  DateTime?
+  status            String    @default("PENDING") // PENDING, VERIFIED, REJECTED
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([employeeId, financialYear])
+  @@index([employeeId])
+  @@index([financialYear])
+}
+
+// ==================== AUDIT LOG ====================
+
+model AuditLog {
+  id            String    @id @default(cuid())
+  user          User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId        String?
+  
+  action        String    // CREATE, UPDATE, DELETE, LOCK, APPROVE, REJECT, EXPORT
+  entity        String    // Employee, Payroll, TaxDeclaration, etc.
+  entityId      String
+  
+  changes       Json?     // Detailed changes
+  reason        String?
+  
+  ipAddress     String?
+  userAgent     String?
+  
+  createdAt     DateTime  @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([entity])
+  @@index([entityId])
+  @@index([createdAt])
+}
+
+// ==================== REPORTING ====================
+
+model PayrollReport {
+  id            String    @id @default(cuid())
+  
+  reportType    String    // SALARY_REGISTER, BANK_TRANSFER, TAX_SUMMARY, COST_ANALYSIS
+  month         Int
+  year          Int
+  
+  generatedBy   String
+  dataSnapshot  Json
+  
+  createdAt     DateTime  @default(now())
+
+  @@index([reportType])
+  @@index([month, year])
+}
