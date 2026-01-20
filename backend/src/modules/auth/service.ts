@@ -2,7 +2,7 @@ import prisma from '@config/database';
 import { UnauthorizedException, DuplicateException } from '@shared/exceptions';
 import { RegisterRequest, TokenPayload } from './dto';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import config from '@config/env';
 
 /**
@@ -204,20 +204,18 @@ export class AuthService {
    * Generate JWT token
    */
   private generateToken(payload: TokenPayload): string {
-    // @ts-ignore - JWT library types are overly strict with SignOptions
-    return jwt.sign(payload as any, config.JWT_SECRET as any, {
+    return jwt.sign(payload, config.JWT_SECRET, {
       expiresIn: config.JWT_EXPIRES_IN,
-    } as any);
+    } as SignOptions);
   }
 
   /**
    * Generate refresh token
    */
   private generateRefreshToken(payload: Pick<TokenPayload, 'id'>): string {
-    // @ts-ignore - JWT library types are overly strict with SignOptions
-    return jwt.sign(payload as any, config.JWT_REFRESH_SECRET as any, {
+    return jwt.sign(payload, config.JWT_REFRESH_SECRET, {
       expiresIn: config.JWT_REFRESH_EXPIRES_IN,
-    } as any);
+    } as SignOptions);
   }
 }
 

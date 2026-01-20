@@ -4,6 +4,7 @@
 
 // import salaryService from '@modules/salary/service';
 import { SalaryRules } from '@modules/salary/domain/rules';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 // import { SalaryComponent } from '@modules/salary/domain/entity';
 // import { BusinessRuleException } from '@shared/exceptions';
 

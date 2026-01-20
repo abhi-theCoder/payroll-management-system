@@ -3,6 +3,7 @@
  * Future implementation with BullMQ/Bull for job scheduling
  */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 // interface PayrollJob {
 //   id: string;
 //   month: number;

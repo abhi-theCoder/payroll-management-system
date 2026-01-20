@@ -423,6 +423,7 @@ export class PayrollService {
   /**
    * Get leave data for month
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   // private async _getLeaveData(
   //   employeeId: string,
   //   month: number,
