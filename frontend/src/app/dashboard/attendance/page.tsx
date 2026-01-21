@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Navigation } from '@/components/Navigation';
+import { DashboardLayout } from '@/components/DashboardLayout';
 
 export default function AttendancePage() {
   const [selectedMonth, setSelectedMonth] = useState<string>('2024-01');
@@ -45,8 +45,7 @@ export default function AttendancePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
+    <DashboardLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -71,7 +70,7 @@ export default function AttendancePage() {
               <select
                 value={selectedEmployee}
                 onChange={(e) => setSelectedEmployee(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900"
               >
                 <option value="">All Employees</option>
                 {employees.map((emp) => (
@@ -215,6 +214,6 @@ export default function AttendancePage() {
           </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

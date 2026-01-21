@@ -4,13 +4,19 @@ import { useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
 
 export const useAuth = () => {
-  const { user, token, isAuthenticated, isLoading, error, login, register, logout, loadCurrentUser, clearError } = useAuthStore();
+  const { user, token, isAuthenticated, isLoading, error, login, register, logout, loadCurrentUser, clearError, isHydrated, hydrate } = useAuthStore();
 
+  // Hydrate store from localStorage on mount
   useEffect(() => {
-    if (token && !user) {
+    hydrate();
+  }, [hydrate]);
+
+  // Load user from token if needed (for hard refresh persistence)
+  useEffect(() => {
+    if (isHydrated && token && !user && !isLoading) {
       loadCurrentUser();
     }
-  }, [token, user, loadCurrentUser]);
+  }, [isHydrated, token, user, isLoading, loadCurrentUser]);
 
   return {
     user,
@@ -22,5 +28,6 @@ export const useAuth = () => {
     register,
     logout,
     clearError,
+    isHydrated,
   };
 };

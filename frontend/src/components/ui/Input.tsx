@@ -22,7 +22,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <input
           ref={ref}
           id={inputId}
-          className={`form-input ${error ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''} ${className}`}
+          className={`form-input text-gray-900 ${error ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''} ${className}`}
           {...props}
         />
         {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
@@ -33,3 +33,4 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
 );
 
 Input.displayName = 'Input';
+export default Input;

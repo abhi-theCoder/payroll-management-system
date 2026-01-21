@@ -19,9 +19,9 @@ export const Sidebar = ({ isCollapsed = false, onCollapse }: SidebarProps) => {
   const { user } = useAuth();
   const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set());
 
-  if (!user) return null;
+  if (!user || !user.role) return null;
 
-  const userRole = (user.role as UserRole) || UserRole.EMPLOYEE;
+  const userRole = user.role as UserRole;
   const menuItems = getVisibleMenuItems(userRole);
 
   const toggleMenu = (menuId: string) => {
@@ -46,39 +46,39 @@ export const Sidebar = ({ isCollapsed = false, onCollapse }: SidebarProps) => {
 
   return (
     <aside
-      className={`fixed left-0 top-0 h-screen bg-white transition-all duration-300 z-40 border-r`}
+      className={`fixed left-0 top-0 h-screen transition-all duration-300 z-40 border-r`}
       style={{
         width: isCollapsed ? '80px' : '280px',
         borderRightColor: COLORS.border,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: 'rgb(30, 58, 138)',
       }}
     >
       {/* Logo Section */}
       <div
         className="flex items-center justify-between h-16 px-6 border-b"
-        style={{ borderBottomColor: COLORS.border }}
+        style={{ borderBottomColor: '#1e3a8a' }}
       >
         {!isCollapsed && (
           <Link href="/dashboard" className="flex items-center gap-2">
             <div
               className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm"
-              style={{ backgroundColor: COLORS.primary[800] }}
+              style={{ backgroundColor: '#FFFFFF' }}
             >
-              ERP
+              <span style={{ color: '#1e3a8a' }}>ERP</span>
             </div>
-            <span className="text-lg font-bold" style={{ color: COLORS.primary[800] }}>
+            <span className="text-lg font-bold" style={{ color: '#FFFFFF' }}>
               Payroll
             </span>
           </Link>
         )}
         <button
           onClick={() => onCollapse?.(!isCollapsed)}
-          className="p-1 hover:bg-gray-100 rounded-lg transition"
+          className="p-1 hover:bg-blue-700 rounded-lg transition"
         >
           <ChevronDown
             size={18}
             style={{
-              color: COLORS.textSecondary,
+              color: '#FFFFFF',
               transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
               transition: 'transform 0.3s',
             }}
@@ -97,16 +97,12 @@ export const Sidebar = ({ isCollapsed = false, onCollapse }: SidebarProps) => {
                   onClick={() => toggleMenu(item.id)}
                   className="w-full flex items-center justify-between px-4 py-3 rounded-lg transition group relative"
                   style={{
-                    backgroundColor: expandedMenus.has(item.id) ? COLORS.backgroundLight : 'transparent',
-                    color: expandedMenus.has(item.id) ? COLORS.primary[800] : COLORS.textPrimary,
+                    backgroundColor: expandedMenus.has(item.id) ? '#1e528f' : 'transparent',
+                    color: '#FFFFFF',
                   }}
                 >
                   <div className="flex items-center gap-3">
-                    <div
-                      style={{
-                        color: expandedMenus.has(item.id) ? COLORS.primary[600] : COLORS.textSecondary,
-                      }}
-                    >
+                    <div style={{ color: '#E5E7EB' }}>
                       {renderIcon(item.icon)}
                     </div>
                     {!isCollapsed && <span className="font-medium text-sm">{item.label}</span>}
@@ -117,7 +113,7 @@ export const Sidebar = ({ isCollapsed = false, onCollapse }: SidebarProps) => {
                       style={{
                         transform: expandedMenus.has(item.id) ? 'rotate(180deg)' : 'rotate(0deg)',
                         transition: 'transform 0.2s',
-                        color: COLORS.textSecondary,
+                        color: '#E5E7EB',
                       }}
                     />
                   )}
@@ -127,15 +123,11 @@ export const Sidebar = ({ isCollapsed = false, onCollapse }: SidebarProps) => {
                   href={item.href || '#'}
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition relative group"
                   style={{
-                    backgroundColor: isActive(item.href) ? COLORS.backgroundLight : 'transparent',
-                    color: isActive(item.href) ? COLORS.primary[800] : COLORS.textPrimary,
+                    backgroundColor: isActive(item.href) ? '#1e528f' : 'transparent',
+                    color: '#FFFFFF',
                   }}
                 >
-                  <div
-                    style={{
-                      color: isActive(item.href) ? COLORS.primary[600] : COLORS.textSecondary,
-                    }}
-                  >
+                  <div style={{ color: isActive(item.href) ? '#FFFFFF' : '#E5E7EB' }}>
                     {renderIcon(item.icon)}
                   </div>
                   {!isCollapsed && (
@@ -144,7 +136,7 @@ export const Sidebar = ({ isCollapsed = false, onCollapse }: SidebarProps) => {
                   {isActive(item.href) && (
                     <div
                       className="absolute left-0 top-0 bottom-0 w-1 rounded-r-lg"
-                      style={{ backgroundColor: COLORS.primary[600] }}
+                      style={{ backgroundColor: '#60A5FA' }}
                     />
                   )}
                 </Link>
@@ -189,17 +181,17 @@ export const Sidebar = ({ isCollapsed = false, onCollapse }: SidebarProps) => {
       {/* Footer Section */}
       <div
         className="border-t px-3 py-4"
-        style={{ borderTopColor: COLORS.border }}
+        style={{ borderTopColor: '#1e528f' }}
       >
         {!isCollapsed && (
           <div
-            className="px-4 py-3 rounded-lg text-xs"
-            style={{ backgroundColor: COLORS.backgroundLight }}
+            className="px-4 py-3 rounded-lg text-xs\n"
+            style={{ backgroundColor: '#1e528f' }}
           >
-            <p style={{ color: COLORS.textPrimary }} className="font-semibold">
+            <p style={{ color: '#FFFFFF' }} className="font-semibold">
               {user.firstName} {user.lastName}
             </p>
-            <p style={{ color: COLORS.textSecondary }}>{user.role}</p>
+            <p style={{ color: '#E5E7EB' }}>{user.role}</p>
           </div>
         )}
       </div>

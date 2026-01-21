@@ -30,10 +30,11 @@ export const TopHeader = ({ isSidebarCollapsed = false }: TopHeaderProps) => {
 
   return (
     <header
-      className="fixed top-0 right-0 h-16 border-b bg-white z-30 transition-all duration-300 flex items-center justify-between px-8"
+      className="fixed top-0 right-0 h-16 border-b z-30 transition-all duration-300 flex items-center justify-between px-8"
       style={{
         left: isSidebarCollapsed ? '80px' : '280px',
         borderBottomColor: COLORS.border,
+        backgroundColor: 'rgb(30, 58, 138)',
       }}
     >
       {/* Breadcrumb / Title */}
@@ -42,8 +43,8 @@ export const TopHeader = ({ isSidebarCollapsed = false }: TopHeaderProps) => {
       {/* Right Section */}
       <div className="flex items-center gap-6">
         {/* Notifications */}
-        <button className="p-2 hover:bg-gray-100 rounded-lg transition relative">
-          <Bell size={20} style={{ color: COLORS.textSecondary }} />
+        <button className="p-2 hover:bg-blue-700 rounded-lg transition relative">
+          <Bell size={20} style={{ color: '#FFFFFF' }} />
           <span
             className="absolute top-1 right-1 w-2 h-2 rounded-full"
             style={{ backgroundColor: COLORS.error }}
@@ -57,13 +58,13 @@ export const TopHeader = ({ isSidebarCollapsed = false }: TopHeaderProps) => {
         <div className="relative">
           <button
             onClick={() => setIsProfileOpen(!isProfileOpen)}
-            className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 rounded-lg transition"
+            className="flex items-center gap-3 px-4 py-2 hover:bg-blue-700 rounded-lg transition"
           >
             <div className="flex flex-col items-end">
-              <p className="text-sm font-medium" style={{ color: COLORS.textPrimary }}>
+              <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>
                 {user?.firstName} {user?.lastName}
               </p>
-              <p className="text-xs" style={{ color: COLORS.textSecondary }}>
+              <p className="text-xs" style={{ color: '#E5E7EB' }}>
                 {user?.role}
               </p>
             </div>

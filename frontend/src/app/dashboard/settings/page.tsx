@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Alert } from '@/components/ui/Alert';
-import { Navigation } from '@/components/Navigation';
+import { DashboardLayout } from '@/components/DashboardLayout';
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<'company' | 'payroll' | 'tax' | 'system'>('company');
@@ -21,8 +21,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
+    <DashboardLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -204,26 +203,26 @@ export default function SettingsPage() {
                       <div className="space-y-4">
                         <div>
                           <p className="text-sm text-gray-600 mb-2">Currency</p>
-                          <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
-                            <option selected>Indian Rupee (₹)</option>
-                            <option>US Dollar ($)</option>
-                            <option>Euro (€)</option>
+                          <select defaultValue="INR" className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900">
+                            <option value="INR">Indian Rupee (₹)</option>
+                            <option value="USD">US Dollar ($)</option>
+                            <option value="EUR">Euro (€)</option>
                           </select>
                         </div>
                         <div>
                           <p className="text-sm text-gray-600 mb-2">Date Format</p>
-                          <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
-                            <option selected>DD-MM-YYYY</option>
-                            <option>MM-DD-YYYY</option>
-                            <option>YYYY-MM-DD</option>
+                          <select defaultValue="DD-MM-YYYY" className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900">
+                            <option value="DD-MM-YYYY">DD-MM-YYYY</option>
+                            <option value="MM-DD-YYYY">MM-DD-YYYY</option>
+                            <option value="YYYY-MM-DD">YYYY-MM-DD</option>
                           </select>
                         </div>
                         <div>
                           <p className="text-sm text-gray-600 mb-2">Time Zone</p>
-                          <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
-                            <option selected>IST (UTC +5:30)</option>
-                            <option>UTC</option>
-                            <option>GMT</option>
+                          <select defaultValue="IST" className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900">
+                            <option value="IST">IST (UTC +5:30)</option>
+                            <option value="UTC">UTC</option>
+                            <option value="GMT">GMT</option>
                           </select>
                         </div>
                       </div>
@@ -265,6 +264,6 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

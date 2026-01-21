@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
-import { Navigation } from '@/components/Navigation';
+import { DashboardLayout } from '@/components/DashboardLayout';
 
 export default function ReportsPage() {
   const [selectedReport, setSelectedReport] = useState<string | null>(null);
@@ -49,8 +49,7 @@ export default function ReportsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
+    <DashboardLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -113,7 +112,7 @@ export default function ReportsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-2">Department</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                  <select className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900">
                     <option>All Departments</option>
                     <option>HR</option>
                     <option>Finance</option>
@@ -216,6 +215,6 @@ export default function ReportsPage() {
           </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

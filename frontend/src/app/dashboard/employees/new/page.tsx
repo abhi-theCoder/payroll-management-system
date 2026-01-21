@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Alert } from '@/components/ui/Alert';
-import { Navigation } from '@/components/Navigation';
+import { DashboardLayout } from '@/components/DashboardLayout';
+import { RouteGuard } from '@/components/RouteGuard';
+import { Permission } from '@/config/rbac';
 import { employeeService } from '@/services/api/employeeService';
 import { validateEmail } from '@/utils';
 
@@ -132,9 +134,9 @@ export default function NewEmployeePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <RouteGuard requiredPermission={Permission.CREATE_EMPLOYEE}>
+      <DashboardLayout>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Add New Employee</h1>
@@ -412,6 +414,6 @@ export default function NewEmployeePage() {
           </form>
         </div>
       </div>
-    </div>
-  );
-}
+    </DashboardLayout>
+    </RouteGuard>
+  )}

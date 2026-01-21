@@ -101,7 +101,7 @@ export default function HomePage() {
               {
                 icon: '🔐',
                 title: 'Role-Based Access',
-                desc: 'Fine-grained permissions for Super Admin, HR, Accounts, and Employees.',
+                desc: 'Fine-grained permissions for Admin, HR, Accounts, and Employees.',
               },
             ].map((feature) => (
               <div
@@ -133,7 +133,7 @@ export default function HomePage() {
           <div className="grid md:grid-cols-2 gap-8">
             {[
               {
-                role: 'Super Admin',
+                role: 'Admin',
                 desc: 'Full access to all modules, user management, and system configuration.',
                 permissions: [
                   'Manage all employees',

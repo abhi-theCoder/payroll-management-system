@@ -21,7 +21,12 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      router.push('/dashboard');
+      
+      // Check if user was trying to access a specific page before login
+      const redirectTo = localStorage.getItem('redirectAfterLogin') || '/dashboard';
+      localStorage.removeItem('redirectAfterLogin');
+      
+      router.push(redirectTo);
     } catch (err: any) {
       setError(err?.message || 'Login failed. Please try again.');
     } finally {
@@ -205,7 +210,7 @@ export default function LoginPage() {
             </p>
             <div className="space-y-2 text-xs">
               {[
-                { role: 'Super Admin', email: 'admin@example.com', password: 'Admin@123' },
+                { role: 'Admin', email: 'admin@example.com', password: 'Admin@123' },
                 { role: 'HR', email: 'hr@example.com', password: 'HR@123' },
                 { role: 'Accounts', email: 'accounts@example.com', password: 'Accounts@123' },
                 { role: 'Employee', email: 'puspendu.developer@gmail.com', password: 'Test@123' },

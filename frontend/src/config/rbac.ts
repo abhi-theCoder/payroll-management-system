@@ -4,7 +4,7 @@
  */
 
 export enum UserRole {
-  SUPER_ADMIN = 'SUPER_ADMIN',
+  ADMIN = 'ADMIN',
   HR = 'HR',
   ACCOUNTS = 'ACCOUNTS',
   EMPLOYEE = 'EMPLOYEE',
@@ -66,7 +66,7 @@ export enum Permission {
 
 // Role to Permissions Mapping
 export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
-  [UserRole.SUPER_ADMIN]: [
+  [UserRole.ADMIN]: [
     // All permissions
     Permission.VIEW_DASHBOARD,
     Permission.VIEW_EMPLOYEES,
@@ -102,9 +102,6 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
 
   [UserRole.HR]: [
     Permission.VIEW_DASHBOARD,
-    Permission.VIEW_EMPLOYEES,
-    Permission.CREATE_EMPLOYEE,
-    Permission.EDIT_EMPLOYEE,
     Permission.VIEW_SALARY_STRUCTURE,
     Permission.VIEW_PAYROLL,
     Permission.VIEW_PAYSLIPS,
@@ -122,7 +119,6 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
 
   [UserRole.ACCOUNTS]: [
     Permission.VIEW_DASHBOARD,
-    Permission.VIEW_EMPLOYEES,
     Permission.VIEW_SALARY_STRUCTURE,
     Permission.VIEW_PAYROLL,
     Permission.EXECUTE_PAYROLL,
@@ -282,14 +278,20 @@ export const SIDEBAR_MENU: MenuItem[] = [
 /**
  * Check if user has permission
  */
-export function hasPermission(userRole: UserRole, permission: Permission): boolean {
+export function hasPermission(userRole: UserRole | undefined | null, permission: Permission): boolean {
+  if (!userRole || !ROLE_PERMISSIONS[userRole]) {
+    return false;
+  }
   return ROLE_PERMISSIONS[userRole].includes(permission);
 }
 
 /**
  * Get visible menu items based on user role
  */
-export function getVisibleMenuItems(userRole: UserRole): MenuItem[] {
+export function getVisibleMenuItems(userRole: UserRole | undefined | null): MenuItem[] {
+  if (!userRole || !ROLE_PERMISSIONS[userRole]) {
+    return [];
+  }
   return SIDEBAR_MENU.filter((item) => hasPermissionForMenu(userRole, item)).map((item) => ({
     ...item,
     children: item.children?.filter((child) => hasPermissionForMenu(userRole, child)),
@@ -299,6 +301,9 @@ export function getVisibleMenuItems(userRole: UserRole): MenuItem[] {
 /**
  * Check if user has permission for a menu item
  */
-function hasPermissionForMenu(userRole: UserRole, item: MenuItem): boolean {
+function hasPermissionForMenu(userRole: UserRole | undefined | null, item: MenuItem): boolean {
+  if (!userRole) {
+    return false;
+  }
   return item.permissions.some((permission) => hasPermission(userRole, permission));
 }

@@ -26,6 +26,7 @@ model User {
   employee      Employee?
   auditLogs     AuditLog[]
   tokenBlacklist TokenBlacklist[]
+  leaveApprovals LeaveApproval[] @relation("LeaveApprover")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -93,7 +94,8 @@ model Employee {
   payrolls              Payroll[]
   payslips              Payslip[]
   attendance            Attendance[]
-  leaves                Leave[]
+  leaveRequests         LeaveRequest[]
+  leaveBalances         LeaveBalance[]
   taxDeclarations       TaxDeclaration[]
   complianceRecords     ComplianceRecord[]
   
@@ -271,27 +273,6 @@ model Attendance {
   @@index([date])
 }
 
-// ==================== LEAVE ====================
-
-model Leave {
-  id            String    @id @default(cuid())
-  employee      Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  employeeId    String
-  
-  leaveType     String    // CASUAL, SICK, EARNED, MATERNITY, PATERNITY, UNPAID
-  startDate     DateTime
-  endDate       DateTime
-  daysUsed      Float
-  status        String    @default("PENDING") // PENDING, APPROVED, REJECTED
-  remarks       String?
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  @@index([employeeId])
-  @@index([status])
-}
-
 // ==================== COMPLIANCE ====================
 
 model ComplianceRecord {
@@ -347,6 +328,137 @@ model TaxDeclaration {
   @@unique([employeeId, financialYear])
   @@index([employeeId])
   @@index([financialYear])
+}
+
+// ==================== LEAVE MANAGEMENT ====================
+
+model LeaveType {
+  id                String    @id @default(cuid())
+  name              String    // CL, SL, PL, LOP, WFH, etc.
+  code              String    @unique
+  description       String?
+  maxPerYear        Int       // Maximum days per year
+  carryForward      Int       // Days that can be carried forward
+  isCarryForwardAllowed Boolean @default(true)
+  isPaid            Boolean   @default(true)
+  requiresDocument  Boolean   @default(false)
+  active            Boolean   @default(true)
+
+  // Relations
+  balances          LeaveBalance[]
+  requests          LeaveRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([code])
+}
+
+model LeaveBalance {
+  id            String    @id @default(cuid())
+  employee      Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId    String
+  leaveType     LeaveType @relation(fields: [leaveTypeId], references: [id])
+  leaveTypeId   String
+  
+  year          Int
+  total         Int       // Total allotted
+  used          Int       // Already used
+  balance       Int       // Remaining (calculated)
+  carriedForward Int     @default(0)
+  
+  lastUpdated   DateTime  @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([employeeId, leaveTypeId, year])
+  @@index([employeeId])
+  @@index([year])
+}
+
+model LeaveRequest {
+  id            String    @id @default(cuid())
+  employee      Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId    String
+  
+  leaveType     LeaveType @relation(fields: [leaveTypeId], references: [id])
+  leaveTypeId   String
+  
+  fromDate      DateTime
+  toDate        DateTime
+  
+  days          Float     // Can be 0.5 for half day
+  reason        String
+  documentUrl   String?
+  
+  status        String    @default("PENDING") // PENDING, APPROVED, REJECTED, CANCELLED
+  
+  approvals     LeaveApproval[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([status])
+  @@index([fromDate, toDate])
+}
+
+model LeaveApproval {
+  id            String    @id @default(cuid())
+  leaveRequest  LeaveRequest @relation(fields: [leaveRequestId], references: [id], onDelete: Cascade)
+  leaveRequestId String
+  
+  approver      User      @relation(name: "LeaveApprover", fields: [approverId], references: [id])
+  approverId    String
+  
+  level         Int       // Approval hierarchy level (1, 2, 3...)
+  status        String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  remarks       String?
+  
+  approvedAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([leaveRequestId])
+  @@index([approverId])
+  @@index([status])
+}
+
+model LeaveApprovalGroup {
+  id            String    @id @default(cuid())
+  department    String    // Department name or ID
+  approvalLevels Int      // Number of approval levels (1, 2, or 3)
+  approverIds   String[]  // JSON array of approver user IDs per level
+  escalationDays Int      @default(5) // Days before escalation
+  active        Boolean   @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([department])
+  @@index([active])
+}
+
+model LeavePolicy {
+  id            String    @id @default(cuid())
+  policyName    String
+  companyName   String
+  
+  financialYearStart Int    // Month (1-12)
+  financialYearEnd   Int    // Month (1-12)
+  
+  weekendDays   String[]  // ["SATURDAY", "SUNDAY"]
+  holidayIds    String[]  // Holiday IDs to exclude
+  
+  lopConfiguration Json   // LOP rules and deductions
+  encashmentRules Json    // Rules for encashing leave
+  
+  active        Boolean   @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ==================== AUDIT LOG ====================

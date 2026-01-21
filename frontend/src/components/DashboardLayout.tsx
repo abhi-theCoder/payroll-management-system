@@ -14,21 +14,27 @@ interface DashboardLayoutProps {
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, token, isHydrated } = useAuth();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-  // Redirect to login if not authenticated
+  // Redirect to login if not authenticated after hydration completes
   useEffect(() => {
-    if (!isLoading && !user) {
+    // Wait for hydration to complete first
+    if (!isHydrated) return;
+    
+    // If loading is done AND no token AND no user, redirect to login
+    if (!isLoading && !token && !user) {
+      // Store the current page they were trying to access
+      localStorage.setItem('redirectAfterLogin', pathname);
       router.push('/login');
     }
-  }, [user, isLoading, router]);
+  }, [user, isLoading, token, isHydrated, router, pathname]);
 
-  if (isLoading) {
+  if (isLoading || !isHydrated) {
     return (
       <div
         className="w-full h-screen flex items-center justify-center"
-        style={{ backgroundColor: COLORS.backgroundLight }}
+        style={{ backgroundColor: COLORS.background }}
       >
         <div className="text-center">
           <div
@@ -51,7 +57,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   }
 
   return (
-    <div className="w-full min-h-screen" style={{ backgroundColor: COLORS.backgroundLight }}>
+    <div className="w-full min-h-screen" style={{ backgroundColor: COLORS.background }}>
       {/* Sidebar */}
       <Sidebar isCollapsed={isSidebarCollapsed} onCollapse={setIsSidebarCollapsed} />
 

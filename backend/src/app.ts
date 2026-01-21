@@ -13,10 +13,13 @@ import taxRoutes from '@modules/tax/routes';
 import payrollRoutes from '@modules/payroll/routes';
 import payslipRoutes from '@modules/payslip/routes';
 import reportsRoutes from '@modules/reports/routes';
+import leaveRoutes from '@modules/leave/routes';
 
 // Middleware
 import { requestId } from '@shared/middleware/logging';
 import { errorHandler, notFoundHandler } from '@shared/middleware/errorHandler';
+import { prisma } from '@config/database';
+import { AuditLogger } from '@shared/utils/audit';
 
 /**
  * Create and configure Express app
@@ -61,6 +64,7 @@ export function createApp(): Express {
   app.use('/api/payroll', payrollRoutes);
   app.use('/api/payslips', payslipRoutes);
   app.use('/api/reports', reportsRoutes);
+  app.use('/api/leaves', leaveRoutes);
 
   // 404 handler
   app.use(notFoundHandler);

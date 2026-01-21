@@ -7,9 +7,10 @@ interface AlertProps {
   title?: string;
   message: string;
   onClose?: () => void;
+  className?: string;
 }
 
-export const Alert: React.FC<AlertProps> = ({ type, title, message, onClose }) => {
+export const Alert: React.FC<AlertProps> = ({ type, title, message, onClose, className }) => {
   const typeStyles = {
     success: 'bg-green-50 border-green-200 text-green-800',
     error: 'bg-red-50 border-red-200 text-red-800',
@@ -41,7 +42,7 @@ export const Alert: React.FC<AlertProps> = ({ type, title, message, onClose }) =
   };
 
   return (
-    <div className={`border rounded-lg p-4 flex gap-3 ${typeStyles[type]}`}>
+    <div className={`border rounded-lg p-4 flex gap-3 ${typeStyles[type]} ${className || ''}`}>
       <div className="flex-shrink-0">{typeIcons[type]}</div>
       <div className="flex-1">
         {title && <h3 className="font-semibold mb-1">{title}</h3>}
@@ -57,3 +58,4 @@ export const Alert: React.FC<AlertProps> = ({ type, title, message, onClose }) =
     </div>
   );
 };
+export default Alert;

@@ -97,7 +97,7 @@ export const Navigation = () => {
                         </svg>
                       </button>
                       <div className="absolute left-0 mt-0 w-48 bg-white rounded-md shadow-lg hidden group-hover:block z-50 py-2 border border-gray-200">
-                        {item.submenu.map((subitem) => (
+                        {item && item.submenu && item.submenu.map((subitem) => (
                           <Link
                             key={subitem.href}
                             href={subitem.href}
@@ -195,7 +195,7 @@ export const Navigation = () => {
                       </button>
                       {isExpanded && (
                         <div className="bg-gray-50">
-                          {item.submenu.map((subitem) => (
+                          {item.submenu && item.submenu.map((subitem) => (
                             <Link
                               key={subitem.href}
                               href={subitem.href}

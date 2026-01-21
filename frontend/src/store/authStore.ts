@@ -10,35 +10,32 @@ interface AuthStore {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  isHydrated: boolean;
 
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, firstName: string, lastName: string) => Promise<void>;
   logout: () => Promise<void>;
   loadCurrentUser: () => Promise<void>;
   clearError: () => void;
+  hydrate: () => void;
 }
-
-const getInitialToken = (): string | null => {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('token');
-};
-
-const getInitialAuth = (): boolean => {
-  if (typeof window === 'undefined') return false;
-  return !!localStorage.getItem('token');
-};
 
 export const useAuthStore = create<AuthStore>((set) => ({
   user: null,
-  token: getInitialToken(),
-  isAuthenticated: getInitialAuth(),
+  token: null,
+  isAuthenticated: false,
   isLoading: false,
   error: null,
+  isHydrated: false,
 
   login: async (email, password) => {
     set({ isLoading: true, error: null });
     try {
       const result = await authService.login({ email, password });
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('token', result.token);
+        localStorage.setItem('user', JSON.stringify(result.user));
+      }
       set({
         user: result.user,
         token: result.token,
@@ -58,6 +55,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const result = await authService.register({ email, password, firstName, lastName });
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('token', result.token);
+        localStorage.setItem('user', JSON.stringify(result.user));
+      }
       set({
         user: result.user,
         token: result.token,
@@ -77,6 +78,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
     set({ isLoading: true });
     try {
       await authService.logout();
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
       set({
         user: null,
         token: null,
@@ -84,6 +89,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
         isLoading: false,
       });
     } catch (error) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
       set({ isLoading: false });
       throw error;
     }
@@ -93,8 +102,15 @@ export const useAuthStore = create<AuthStore>((set) => ({
     set({ isLoading: true });
     try {
       const user = await authService.getCurrentUser();
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('user', JSON.stringify(user));
+      }
       set({ user, isLoading: false });
     } catch (error) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
       set({
         user: null,
         token: null,
@@ -105,4 +121,29 @@ export const useAuthStore = create<AuthStore>((set) => ({
   },
 
   clearError: () => set({ error: null }),
+
+  hydrate: () => {
+    if (typeof window === 'undefined') return;
+    try {
+      const token = localStorage.getItem('token');
+      const user = localStorage.getItem('user');
+      const isHydrating = !!token && !user;
+      
+      set({
+        token,
+        user: user ? JSON.parse(user) : null,
+        isAuthenticated: !!token,
+        isLoading: isHydrating,
+        isHydrated: true,
+      });
+
+      // If we have token but no user, fetch it
+      if (isHydrating) {
+        useAuthStore.getState().loadCurrentUser();
+      }
+    } catch (error) {
+      console.error('Failed to hydrate auth state:', error);
+      set({ isHydrated: true });
+    }
+  },
 }));

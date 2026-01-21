@@ -4,9 +4,12 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
-import { Navigation } from '@/components/Navigation';
+import { DashboardLayout } from '@/components/DashboardLayout';
+import { RouteGuard } from '@/components/RouteGuard';
+import { Permission } from '@/config/rbac';
 import { employeeService } from '@/services/api/employeeService';
 import { Employee } from '@/types/models';
+import { Navigation } from '@/components/Navigation';
 
 export default function EmployeeDetailPage() {
   const router = useRouter();
@@ -56,9 +59,9 @@ export default function EmployeeDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <RouteGuard requiredPermission={Permission.VIEW_EMPLOYEES}>
+      <DashboardLayout>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -237,6 +240,6 @@ export default function EmployeeDetailPage() {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
+    </DashboardLayout>
+    </RouteGuard>
+  )}

@@ -34,7 +34,7 @@ class ApiClient {
           // Handle unauthorized - redirect to login
           localStorage.removeItem('token');
           localStorage.removeItem('refreshToken');
-          window.location.href = '/auth/login';
+          window.location.href = '/login';
         }
         return Promise.reject(error);
       }
