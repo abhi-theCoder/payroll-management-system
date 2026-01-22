@@ -6,16 +6,19 @@ WORKDIR /app
 # Install build dependencies
 RUN apk add --no-cache python3 make g++
 
-# Copy package files
-COPY package*.json ./
+# Copy package files explicitly to ensure they are found
+COPY package.json package-lock.json* ./
 
-# Install all dependencies (including dev)
+# Check if package.json was actually copied
+RUN ls -la
+
+# Install all dependencies
 RUN npm install
 
-# Copy everything else (including prisma folder)
+# Copy the rest of the application
 COPY . .
 
-# Generate Prisma client and build the app
+# Generate Prisma client and build
 RUN npx prisma generate
 RUN npm run build
 
@@ -38,13 +41,13 @@ ENV NODE_ENV=production
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy package files from builder
+COPY --from=builder /app/package*.json ./
 
 # Install only production dependencies
 RUN npm ci --only=production
 
-# Copy built application and prisma client from builder
+# Copy built application and prisma
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/prisma ./prisma
@@ -52,8 +55,6 @@ COPY --from=builder /app/prisma ./prisma
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nodejs -u 1001
-
-# Set permissions for nodejs user
 RUN chown -R nodejs:nodejs /app
 
 USER nodejs
