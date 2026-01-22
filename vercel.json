@@ -1,19 +1,21 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next"
-    }
-  ],
-  "framework": "nextjs",
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/"
-    }
-  ],
-  "env": {
-    "NEXT_PUBLIC_APP_NAME": "Payroll Management System"
-  }
+    "version": 2,
+    "builds": [
+        {
+            "src": "frontend/package.json",
+            "use": "@vercel/next"
+        }
+    ],
+    "framework": "nextjs",
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "/"
+        }
+    ],
+    "env": {
+        "NEXT_PUBLIC_APP_NAME": "Payroll Management System"
+    },
+    "cleanUrls": true,
+    "trailingSlash": false
 }
