@@ -3,14 +3,14 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
+# Skip puppeteer download during build to save time and memory
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+
 # Install build dependencies
 RUN apk add --no-cache python3 make g++
 
-# Copy package files explicitly to ensure they are found
+# Copy package files explicitly
 COPY package.json package-lock.json* ./
-
-# Check if package.json was actually copied
-RUN ls -la
 
 # Install all dependencies
 RUN npm install
