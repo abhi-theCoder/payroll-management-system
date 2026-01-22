@@ -2,9 +2,11 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "commonjs",
-    "lib": ["ES2020"],
+    "lib": [
+      "ES2020"
+    ],
     "outDir": "./dist",
-    "rootDir": "./src",
+    // "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -26,11 +28,21 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": "./src",
     "paths": {
-      "@/*": ["*"],
-      "@config/*": ["config/*"],
-      "@modules/*": ["modules/*"],
-      "@shared/*": ["shared/*"],
-      "@jobs/*": ["jobs/*"]
+      "@/*": [
+        "*"
+      ],
+      "@config/*": [
+        "config/*"
+      ],
+      "@modules/*": [
+        "modules/*"
+      ],
+      "@shared/*": [
+        "shared/*"
+      ],
+      "@jobs/*": [
+        "jobs/*"
+      ]
     }
   },
   "ts-node": {
@@ -39,6 +51,13 @@
       "module": "commonjs"
     }
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "dist", "build"]
+  "include": [
+    "src",
+    "prisma"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build"
+  ]
 }

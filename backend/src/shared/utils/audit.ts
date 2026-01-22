@@ -4,7 +4,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import { logger } from '@config/logger';
+import logger from '@config/logger';
 
 export interface AuditLogEntry {
   userId?: string;
@@ -21,7 +21,7 @@ export interface AuditLogEntry {
 }
 
 export class AuditLogger {
-  constructor(private prisma: PrismaClient) {}
+  constructor(private prisma: PrismaClient) { }
 
   /**
    * Log an action
@@ -51,13 +51,21 @@ export class AuditLogger {
             module: entry.module,
             resourceId: entry.resourceId,
             resourceType: entry.resourceType,
-            changes: entry.changes ? JSON.stringify(entry.changes) : null,
+            // Map required legacy fields
+            entity: entry.resourceType || entry.module || 'SYSTEM',
+            entityId: entry.resourceId || 'N/A',
+
+            changes: entry.changes ? (JSON.stringify(entry.changes) as any) : (null as any),
             ipAddress: entry.ipAddress,
             userAgent: entry.userAgent,
             status: entry.status,
             errorMessage: entry.errorMessage,
-            metadata: entry.metadata ? JSON.stringify(entry.metadata) : null,
-            timestamp,
+            metadata: entry.metadata ? JSON.stringify(entry.metadata) : null as any,
+            // timestamp maps to createdAt in schema automatically if we don't pass it, 
+            // but schema has createdAt @default(now()). 
+            // AuditLogger used `timestamp` variable. 
+            // We can pass it to createdAt if we want exact match.
+            createdAt: timestamp,
           },
         });
       }

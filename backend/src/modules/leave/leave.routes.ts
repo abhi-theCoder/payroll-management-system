@@ -3,7 +3,7 @@
  * API endpoints for leave management
  */
 
-import { Router, Request, Response } from 'express';
+import { Router } from 'express';
 import { LeaveController } from './leave.controller';
 import { authenticate } from '../../shared/middleware/auth';
 import { authorizeRole } from '../../shared/middleware/authorization';
@@ -29,6 +29,11 @@ export function createLeaveRoutes(prisma: PrismaClient, auditLogger: AuditLogger
   // Get leave balance
   router.get('/balance', authenticate, (req, res) =>
     controller.getLeaveBalance(req, res),
+  );
+
+  // Get leave types
+  router.get('/types', authenticate, (req, res) =>
+    controller.getLeaveTypes(req, res),
   );
 
   // Cancel leave

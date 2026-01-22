@@ -6,24 +6,24 @@
 // ==================== LEAVE TYPE DTOs ====================
 
 export class LeaveTypeDto {
-  id: string;
-  name: string;
-  code: string;
+  id!: string;
+  name!: string;
+  code!: string;
   description?: string;
-  maxPerYear: number;
-  carryForward: number;
-  isCarryForwardAllowed: boolean;
-  isPaid: boolean;
-  requiresDocument: boolean;
-  active: boolean;
+  maxPerYear!: number;
+  carryForward!: number;
+  isCarryForwardAllowed!: boolean;
+  isPaid!: boolean;
+  requiresDocument!: boolean;
+  active!: boolean;
 }
 
 export class CreateLeaveTypeRequest {
-  name: string;
-  code: string;
+  name!: string;
+  code!: string;
   description?: string;
-  maxPerYear: number;
-  carryForward: number;
+  maxPerYear!: number;
+  carryForward!: number;
   isCarryForwardAllowed?: boolean;
   isPaid?: boolean;
   requiresDocument?: boolean;
@@ -32,45 +32,45 @@ export class CreateLeaveTypeRequest {
 // ==================== LEAVE REQUEST DTOs ====================
 
 export class ApplyLeaveRequest {
-  leaveTypeId: string;
-  fromDate: Date;
-  toDate: Date;
-  reason: string;
+  leaveTypeId!: string;
+  fromDate!: Date;
+  toDate!: Date;
+  reason!: string;
   documentUrl?: string;
 }
 
 export class LeaveRequestDto {
-  id: string;
-  employeeId: string;
-  leaveTypeId: string;
-  fromDate: Date;
-  toDate: Date;
-  days: number;
-  reason: string;
+  id!: string;
+  employeeId!: string;
+  leaveTypeId!: string;
+  fromDate!: Date;
+  toDate!: Date;
+  days!: number;
+  reason!: string;
   documentUrl?: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
-  createdAt: Date;
-  updatedAt: Date;
+  status!: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+  createdAt!: Date;
+  updatedAt!: Date;
 }
 
 // ==================== LEAVE APPROVAL DTOs ====================
 
 export class ApproveLeaveRequest {
-  leaveRequestId: string;
+  leaveRequestId!: string;
   remarks?: string;
 }
 
 export class RejectLeaveRequest {
-  leaveRequestId: string;
-  remarks: string;
+  leaveRequestId!: string;
+  remarks!: string;
 }
 
 export class LeaveApprovalDto {
-  id: string;
-  leaveRequestId: string;
-  approverId: string;
-  level: number;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  id!: string;
+  leaveRequestId!: string;
+  approverId!: string;
+  level!: number;
+  status!: 'PENDING' | 'APPROVED' | 'REJECTED';
   remarks?: string;
   approvedAt?: Date;
 }
@@ -78,29 +78,29 @@ export class LeaveApprovalDto {
 // ==================== LEAVE BALANCE DTOs ====================
 
 export class LeaveBalanceDto {
-  id: string;
-  employeeId: string;
-  leaveTypeId: string;
-  year: number;
-  total: number;
-  used: number;
-  balance: number;
-  carriedForward: number;
+  id!: string;
+  employeeId!: string;
+  leaveTypeId!: string;
+  year!: number;
+  total!: number;
+  used!: number;
+  balance!: number;
+  carriedForward!: number;
 }
 
 // ==================== LEAVE POLICY DTOs ====================
 
 export class LeavePolicyDto {
-  id: string;
-  policyName: string;
-  companyName: string;
-  financialYearStart: number;
-  financialYearEnd: number;
-  weekendDays: string[];
-  holidayIds: string[];
-  lopConfiguration: Record<string, any>;
-  encashmentRules: Record<string, any>;
-  active: boolean;
+  id!: string;
+  policyName!: string;
+  companyName!: string;
+  financialYearStart!: number;
+  financialYearEnd!: number;
+  weekendDays!: string[];
+  holidayIds!: string[];
+  lopConfiguration!: Record<string, any>;
+  encashmentRules!: Record<string, any>;
+  active!: boolean;
 }
 
 export class UpdateLeavePolicyRequest {
@@ -117,12 +117,12 @@ export class UpdateLeavePolicyRequest {
 // ==================== LEAVE APPROVAL GROUP DTOs ====================
 
 export class LeaveApprovalGroupDto {
-  id: string;
-  department: string;
-  approvalLevels: number;
-  approverIds: string[];
-  escalationDays: number;
-  active: boolean;
+  id!: string;
+  department!: string;
+  approvalLevels!: number;
+  approverIds!: string[];
+  escalationDays!: number;
+  active!: boolean;
 }
 
 export class UpdateLeaveApprovalGroupRequest {
@@ -135,8 +135,8 @@ export class UpdateLeaveApprovalGroupRequest {
 // ==================== RESPONSE DTOs ====================
 
 export class LeaveBalanceResponseDto {
-  employeeId: string;
-  leaveTypes: Array<{
+  employeeId!: string;
+  leaveTypes!: Array<{
     leaveTypeId: string;
     leaveTypeName: string;
     total: number;
@@ -147,17 +147,17 @@ export class LeaveBalanceResponseDto {
 }
 
 export class PendingLeaveResponseDto {
-  id: string;
-  employeeId: string;
-  employeeName: string;
-  leaveType: string;
-  fromDate: Date;
-  toDate: Date;
-  days: number;
-  reason: string;
-  status: string;
-  appliedAt: Date;
-  approvalStatus: Array<{
+  id!: string;
+  employeeId!: string;
+  employeeName!: string;
+  leaveType!: string;
+  fromDate!: Date;
+  toDate!: Date;
+  days!: number;
+  reason!: string;
+  status!: string;
+  appliedAt!: Date;
+  approvalStatus!: Array<{
     level: number;
     approverId: string;
     approverName: string;

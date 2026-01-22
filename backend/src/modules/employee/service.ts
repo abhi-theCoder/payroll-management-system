@@ -107,7 +107,7 @@ export class EmployeeService {
     ]);
 
     return {
-      data: employees.map((emp:any) => this.formatEmployeeResponse(emp)),
+      data: employees.map((emp: any) => this.formatEmployeeResponse(emp)),
       total,
       page,
       limit,
@@ -198,6 +198,16 @@ export class EmployeeService {
       dateOfJoining: employee.dateOfJoining,
       employmentType: employee.employmentType,
     };
+  }
+
+  /**
+   * Get employee by user ID
+   */
+  async getEmployeeByUserId(userId: string): Promise<any> {
+    const employee = await prisma.employee.findFirst({
+      where: { userId },
+    });
+    return employee;
   }
 }
 

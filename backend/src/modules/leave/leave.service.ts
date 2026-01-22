@@ -5,7 +5,7 @@
 
 import { PrismaClient } from '@prisma/client';
 import { LeaveRepository } from './leave.repository';
-import { LeaveValidationRules, LeaveApprovalRules, LeaveLOPRules } from './domain/leave-policy.rules';
+import { LeaveValidationRules, LeaveApprovalRules } from './domain/leave-policy.rules';
 import { LeaveRequestEntity, LeaveBalanceEntity } from './domain/leave.entity';
 import { ApplyLeaveInput, ApproveLeaveInput, RejectLeaveInput } from './leave.validator';
 
@@ -106,20 +106,45 @@ export class LeaveService {
     });
 
     // Create approval workflow
-    const approvalGroup = await this.repository.getApprovalGroupByDepartment(
-      (await this.prisma.employee.findUnique({ where: { id: employeeId } }))?.department || 'DEFAULT',
-    );
+    const employee = await this.prisma.employee.findUnique({
+      where: { id: employeeId },
+      include: {
+        leaveGroup: {
+          include: {
+            reviewers: {
+              orderBy: { level: 'asc' }
+            }
+          }
+        }
+      }
+    });
 
-    if (approvalGroup) {
-      // Create approval records for each level
-      for (let level = 1; level <= approvalGroup.approvalLevels; level++) {
-        const approverIndex = level - 1;
-        if (approvalGroup.approverIds[approverIndex]) {
-          await this.repository.createLeaveApproval({
-            leaveRequestId: leaveRequest.id,
-            approverId: approvalGroup.approverIds[approverIndex],
-            level,
-          });
+    if (employee?.leaveGroup?.reviewers?.length) {
+      // Use group reviewers
+      for (const reviewer of employee.leaveGroup.reviewers) {
+        await this.repository.createLeaveApproval({
+          leaveRequestId: leaveRequest.id,
+          approverId: reviewer.reviewerId,
+          level: reviewer.level,
+        });
+      }
+    } else {
+      // Fallback to department-based approval group
+      const approvalGroup = await this.repository.getApprovalGroupByDepartment(
+        employee?.department || 'DEFAULT',
+      );
+
+      if (approvalGroup) {
+        // Create approval records for each level
+        for (let level = 1; level <= approvalGroup.approvalLevels; level++) {
+          const approverIndex = level - 1;
+          if (approvalGroup.approverIds[approverIndex]) {
+            await this.repository.createLeaveApproval({
+              leaveRequestId: leaveRequest.id,
+              approverId: approvalGroup.approverIds[approverIndex],
+              level,
+            });
+          }
         }
       }
     }
@@ -228,7 +253,25 @@ export class LeaveService {
 
   async getLeaveBalance(employeeId: string) {
     const currentYear = new Date().getFullYear();
-    const balances = await this.repository.getLeaveBalancesByEmployee(employeeId, currentYear);
+    let balances = await this.repository.getLeaveBalancesByEmployee(employeeId, currentYear);
+
+    // Auto-initialize balances if they don't exist
+    if (balances.length === 0) {
+      const leaveTypes = await this.repository.getAllLeaveTypes(true);
+      for (const type of leaveTypes) {
+        await this.repository.createLeaveBalance({
+          employeeId,
+          leaveTypeId: type.id,
+          year: currentYear,
+          total: type.maxPerYear,
+          used: 0,
+          balance: type.maxPerYear,
+          carriedForward: 0,
+        });
+      }
+      // Fetch again after initialization
+      balances = await this.repository.getLeaveBalancesByEmployee(employeeId, currentYear);
+    }
 
     return {
       employeeId,
@@ -248,6 +291,12 @@ export class LeaveService {
 
   async getLeaveHistory(employeeId: string) {
     return this.repository.getLeaveHistoryByEmployee(employeeId);
+  }
+
+  // ==================== GET LEAVE TYPES ====================
+
+  async getLeaveTypes() {
+    return this.repository.getAllLeaveTypes(true); // active only
   }
 
   // ==================== GET PENDING LEAVES ====================

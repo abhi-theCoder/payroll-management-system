@@ -3,104 +3,89 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  directUrl  = env("DIRECT_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
-// ==================== USER & AUTH ====================
-
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  password      String
-  firstName     String
-  lastName      String
-  role          String    @default("EMPLOYEE") // ADMIN, HR, ACCOUNTS, EMPLOYEE, MANAGER
-  active        Boolean   @default(true)
-  lastLogin     DateTime?
-  loginAttempts Int       @default(0)
-  lockedUntil   DateTime?
-
-  // Relations
-  employee      Employee?
-  auditLogs     AuditLog[]
+  id             String               @id @default(cuid())
+  email          String               @unique
+  password       String
+  firstName      String
+  lastName       String
+  role           String               @default("EMPLOYEE")
+  active         Boolean              @default(true)
+  lastLogin      DateTime?
+  loginAttempts  Int                  @default(0)
+  lockedUntil    DateTime?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  auditLogs      AuditLog[]
+  employee       Employee?
+  leaveApprovals LeaveApproval[]      @relation("LeaveApprover")
+  leaveReviews   LeaveGroupReviewer[]
   tokenBlacklist TokenBlacklist[]
-  leaveApprovals LeaveApproval[] @relation("LeaveApprover")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   @@index([email])
   @@index([role])
 }
 
 model TokenBlacklist {
-  id    String   @id @default(cuid())
-  token String   @unique
-  user  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
   expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([expiresAt])
 }
 
-// ==================== EMPLOYEE ====================
-
 model Employee {
-  id                    String   @id @default(cuid())
-  employeeId            String   @unique
-  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId                String   @unique
-  
-  firstName             String
-  lastName              String
-  email                 String
-  phone                 String?
-  dateOfBirth           DateTime?
-  gender                String?
-  maritalStatus         String?
-  
-  // Employment Details
-  department            String?
-  designation           String?
-  reportingManager      String?
-  dateOfJoining         DateTime
-  dateOfLeaving         DateTime?
-  employmentType        String   @default("PERMANENT") // PERMANENT, CONTRACT, TEMPORARY
-  
-  // Address
-  addressLine1          String?
-  addressLine2          String?
-  city                  String?
-  state                 String?
-  zipCode               String?
-  country               String?
-  
-  // Tax & Compliance
-  panNumber             String?
-  aadharNumber          String?
-  accountNumber         String?
-  ifscCode              String?
-  uanNumber             String?
-  esicNumber            String?
-  
-  // Status
-  status                String   @default("ACTIVE") // ACTIVE, INACTIVE, LEFT
-  
-  // Relations
-  salaryStructures      SalaryStructure[]
-  payrolls              Payroll[]
-  payslips              Payslip[]
-  attendance            Attendance[]
-  leaveRequests         LeaveRequest[]
-  leaveBalances         LeaveBalance[]
-  taxDeclarations       TaxDeclaration[]
-  complianceRecords     ComplianceRecord[]
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                String             @id @default(cuid())
+  employeeId        String             @unique
+  userId            String             @unique
+  firstName         String
+  lastName          String
+  email             String
+  phone             String?
+  dateOfBirth       DateTime?
+  gender            String?
+  maritalStatus     String?
+  department        String?
+  designation       String?
+  reportingManager  String?
+  dateOfJoining     DateTime
+  dateOfLeaving     DateTime?
+  employmentType    String             @default("PERMANENT")
+  addressLine1      String?
+  addressLine2      String?
+  city              String?
+  state             String?
+  zipCode           String?
+  country           String?
+  panNumber         String?
+  aadharNumber      String?
+  accountNumber     String?
+  ifscCode          String?
+  uanNumber         String?
+  esicNumber        String?
+  status            String             @default("ACTIVE")
+  leaveGroupId      String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  attendance        Attendance[]
+  complianceRecords ComplianceRecord[]
+  leaveGroup        LeaveGroup?        @relation(fields: [leaveGroupId], references: [id])
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  leaveBalances     LeaveBalance[]
+  leaveRequests     LeaveRequest[]
+  payrolls          Payroll[]
+  payslips          Payslip[]
+  salaryStructures  SalaryStructure[]
+  taxDeclarations   TaxDeclaration[]
+  timesheets        Timesheet[]
 
   @@index([employeeId])
   @@index([department])
@@ -108,33 +93,25 @@ model Employee {
   @@index([dateOfJoining])
 }
 
-// ==================== SALARY STRUCTURE ====================
-
 model SalaryStructure {
-  id                String    @id @default(cuid())
-  employee          Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  employeeId        String
-  
-  name              String
-  effectiveFrom     DateTime
-  effectiveUntil    DateTime?
-  
-  // Salary Details
-  basicSalary       Float
-  ctc               Float
-  hra               Float?
-  dearness          Float?
-  conveyance        Float?
-  medical           Float?
-  other             Float?
-  
-  // Relations
-  components        SalaryComponent[]
-  payrolls          Payroll[]
-  
-  isActive          Boolean   @default(true)
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id             String            @id @default(cuid())
+  employeeId     String
+  name           String
+  effectiveFrom  DateTime
+  effectiveUntil DateTime?
+  basicSalary    Float
+  ctc            Float
+  hra            Float?
+  dearness       Float?
+  conveyance     Float?
+  medical        Float?
+  other          Float?
+  isActive       Boolean           @default(true)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  payrolls       Payroll[]
+  components     SalaryComponent[]
+  employee       Employee          @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@index([employeeId])
   @@index([effectiveFrom])
@@ -142,72 +119,54 @@ model SalaryStructure {
 }
 
 model SalaryComponent {
-  id                String    @id @default(cuid())
-  salaryStructure   SalaryStructure @relation(fields: [salaryStructureId], references: [id], onDelete: Cascade)
+  id                String          @id @default(cuid())
   salaryStructureId String
-  
   name              String
-  type              String    // EARNING, DEDUCTION, REIMBURSEMENT
-  calculationType   String    // FIXED, PERCENTAGE, FORMULA
+  type              String
+  calculationType   String
   value             Float
-  formula           String?   // For formula-based calculations
-  dependsOn         String?   // Field name it depends on
-  
-  isOptional        Boolean   @default(false)
-  
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  formula           String?
+  dependsOn         String?
+  isOptional        Boolean         @default(false)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  salaryStructure   SalaryStructure @relation(fields: [salaryStructureId], references: [id], onDelete: Cascade)
 
   @@index([salaryStructureId])
   @@index([type])
 }
 
-// ==================== PAYROLL ====================
-
 model Payroll {
-  id                    String    @id @default(cuid())
-  employee              Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  employeeId            String
-  
-  salaryStructure       SalaryStructure @relation(fields: [salaryStructureId], references: [id])
-  salaryStructureId     String
-  
-  month                 Int       // 1-12
-  year                  Int
-  status                String    @default("DRAFT") // DRAFT, PROCESSING, PROCESSED, LOCKED, REJECTED
-  
-  // Salary Calculations
-  basicSalary           Float
-  earnings              Float
-  deductions            Float
-  grossSalary           Float
-  netSalary             Float
-  
-  // Compliance Deductions
-  pfDeduction           Float     @default(0)
-  esiDeduction          Float     @default(0)
-  ptDeduction           Float     @default(0)
-  tdsDeduction          Float     @default(0)
-  
-  // Attendance
-  daysWorked            Float
-  daysPresent           Float
-  daysAbsent            Float
-  daysLeave             Float
-  
-  // Relations
-  payslip               Payslip?
-  payrollComponents     PayrollComponent[]
-  complianceRecords     ComplianceRecord[]
-  
-  // Metadata
-  lockedAt              DateTime?
-  processedAt           DateTime?
-  rejectionReason       String?
-  remarks               String?
-  
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  id                String             @id @default(cuid())
+  employeeId        String
+  salaryStructureId String
+  month             Int
+  year              Int
+  status            String             @default("DRAFT")
+  basicSalary       Float
+  earnings          Float
+  deductions        Float
+  grossSalary       Float
+  netSalary         Float
+  pfDeduction       Float              @default(0)
+  esiDeduction      Float              @default(0)
+  ptDeduction       Float              @default(0)
+  tdsDeduction      Float              @default(0)
+  daysWorked        Float
+  daysPresent       Float
+  daysAbsent        Float
+  daysLeave         Float
+  lockedAt          DateTime?
+  processedAt       DateTime?
+  rejectionReason   String?
+  remarks           String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  complianceRecords ComplianceRecord[]
+  employee          Employee           @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  salaryStructure   SalaryStructure    @relation(fields: [salaryStructureId], references: [id])
+  payrollComponents PayrollComponent[]
+  payslip           Payslip?
 
   @@unique([employeeId, month, year])
   @@index([employeeId])
@@ -217,160 +176,126 @@ model Payroll {
 }
 
 model PayrollComponent {
-  id            String    @id @default(cuid())
-  payroll       Payroll   @relation(fields: [payrollId], references: [id], onDelete: Cascade)
+  id            String   @id @default(cuid())
   payrollId     String
-  
   componentName String
   amount        Float
-  type          String    // EARNING, DEDUCTION
-  
-  createdAt     DateTime  @default(now())
+  type          String
+  createdAt     DateTime @default(now())
+  payroll       Payroll  @relation(fields: [payrollId], references: [id], onDelete: Cascade)
 
   @@index([payrollId])
 }
 
-// ==================== PAYSLIP ====================
-
 model Payslip {
-  id            String    @id @default(cuid())
-  payroll       Payroll   @relation(fields: [payrollId], references: [id], onDelete: Cascade)
-  payrollId     String    @unique
-  
-  employee      Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  employeeId    String
-  
-  status        String    @default("GENERATED") // GENERATED, SENT, VIEWED, DOWNLOADED
-  pdfUrl        String?
-  
-  sentAt        DateTime?
-  viewedAt      DateTime?
-  downloadedAt  DateTime?
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id           String    @id @default(cuid())
+  payrollId    String    @unique
+  employeeId   String
+  status       String    @default("GENERATED")
+  pdfUrl       String?
+  sentAt       DateTime?
+  viewedAt     DateTime?
+  downloadedAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  employee     Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  payroll      Payroll   @relation(fields: [payrollId], references: [id], onDelete: Cascade)
 
   @@index([employeeId])
   @@index([status])
 }
 
-// ==================== ATTENDANCE ====================
-
 model Attendance {
-  id            String    @id @default(cuid())
-  employee      Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  employeeId    String
-  
-  date          DateTime
-  status        String    // PRESENT, ABSENT, HALF_DAY, LEAVE, HOLIDAY, WEEKEND
-  remarks       String?
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id         String   @id @default(cuid())
+  employeeId String
+  date       DateTime
+  status     String
+  remarks    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@unique([employeeId, date])
   @@index([employeeId])
   @@index([date])
 }
 
-// ==================== COMPLIANCE ====================
-
 model ComplianceRecord {
-  id            String    @id @default(cuid())
-  employee      Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  employeeId    String
-  
-  payroll       Payroll?  @relation(fields: [payrollId], references: [id], onDelete: SetNull)
-  payrollId     String?
-  
-  complianceType String   // PF, ESI, PT, TDS
-  amount        Float
-  month         Int
-  year          Int
-  
-  filedAt       DateTime?
-  status        String    @default("PENDING") // PENDING, FILED, ACKNOWLEDGED
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id             String    @id @default(cuid())
+  employeeId     String
+  payrollId      String?
+  complianceType String
+  amount         Float
+  month          Int
+  year           Int
+  filedAt        DateTime?
+  status         String    @default("PENDING")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  employee       Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  payroll        Payroll?  @relation(fields: [payrollId], references: [id])
 
   @@unique([employeeId, complianceType, month, year])
   @@index([employeeId])
   @@index([complianceType])
 }
 
-// ==================== TAX ====================
-
 model TaxDeclaration {
-  id                String    @id @default(cuid())
-  employee          Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  employeeId        String
-  
-  financialYear     String    // e.g., "2024-2025"
-  
-  // Section-wise declarations
-  section80C        Float     @default(0)  // Investments
-  section80D        Float     @default(0)  // Medical Insurance
-  section80E        Float     @default(0)  // Education Loan
-  section80G        Float     @default(0)  // Charity
-  section80TTA       Float     @default(0)  // Savings Account Interest
-  
-  totalExemptions   Float     @default(0)
-  estimatedTax      Float     @default(0)
-  
-  declarationDate   DateTime  @default(now())
-  verificationDate  DateTime?
-  status            String    @default("PENDING") // PENDING, VERIFIED, REJECTED
-  
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id               String    @id @default(cuid())
+  employeeId       String
+  financialYear    String
+  section80C       Float     @default(0)
+  section80D       Float     @default(0)
+  section80E       Float     @default(0)
+  section80G       Float     @default(0)
+  section80TTA     Float     @default(0)
+  totalExemptions  Float     @default(0)
+  estimatedTax     Float     @default(0)
+  declarationDate  DateTime  @default(now())
+  verificationDate DateTime?
+  status           String    @default("PENDING")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  employee         Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@unique([employeeId, financialYear])
   @@index([employeeId])
   @@index([financialYear])
 }
 
-// ==================== LEAVE MANAGEMENT ====================
-
 model LeaveType {
-  id                String    @id @default(cuid())
-  name              String    // CL, SL, PL, LOP, WFH, etc.
-  code              String    @unique
-  description       String?
-  maxPerYear        Int       // Maximum days per year
-  carryForward      Int       // Days that can be carried forward
-  isCarryForwardAllowed Boolean @default(true)
-  isPaid            Boolean   @default(true)
-  requiresDocument  Boolean   @default(false)
-  active            Boolean   @default(true)
-
-  // Relations
-  balances          LeaveBalance[]
-  requests          LeaveRequest[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                    String         @id @default(cuid())
+  name                  String
+  code                  String         @unique
+  description           String?
+  maxPerYear            Int
+  carryForward          Int
+  isCarryForwardAllowed Boolean        @default(true)
+  isPaid                Boolean        @default(true)
+  requiresDocument      Boolean        @default(false)
+  active                Boolean        @default(true)
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  balances              LeaveBalance[]
+  requests              LeaveRequest[]
 
   @@index([code])
 }
 
 model LeaveBalance {
-  id            String    @id @default(cuid())
-  employee      Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  employeeId    String
-  leaveType     LeaveType @relation(fields: [leaveTypeId], references: [id])
-  leaveTypeId   String
-  
-  year          Int
-  total         Int       // Total allotted
-  used          Int       // Already used
-  balance       Int       // Remaining (calculated)
-  carriedForward Int     @default(0)
-  
-  lastUpdated   DateTime  @default(now())
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String    @id @default(cuid())
+  employeeId     String
+  leaveTypeId    String
+  year           Int
+  total          Int
+  used           Int
+  balance        Int
+  carriedForward Int       @default(0)
+  lastUpdated    DateTime  @default(now())
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  employee       Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  leaveType      LeaveType @relation(fields: [leaveTypeId], references: [id])
 
   @@unique([employeeId, leaveTypeId, year])
   @@index([employeeId])
@@ -378,26 +303,20 @@ model LeaveBalance {
 }
 
 model LeaveRequest {
-  id            String    @id @default(cuid())
-  employee      Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  employeeId    String
-  
-  leaveType     LeaveType @relation(fields: [leaveTypeId], references: [id])
-  leaveTypeId   String
-  
-  fromDate      DateTime
-  toDate        DateTime
-  
-  days          Float     // Can be 0.5 for half day
-  reason        String
-  documentUrl   String?
-  
-  status        String    @default("PENDING") // PENDING, APPROVED, REJECTED, CANCELLED
-  
-  approvals     LeaveApproval[]
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String          @id @default(cuid())
+  employeeId  String
+  leaveTypeId String
+  fromDate    DateTime
+  toDate      DateTime
+  days        Float
+  reason      String
+  documentUrl String?
+  status      String          @default("PENDING")
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  approvals   LeaveApproval[]
+  employee    Employee        @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  leaveType   LeaveType       @relation(fields: [leaveTypeId], references: [id])
 
   @@index([employeeId])
   @@index([status])
@@ -405,21 +324,17 @@ model LeaveRequest {
 }
 
 model LeaveApproval {
-  id            String    @id @default(cuid())
-  leaveRequest  LeaveRequest @relation(fields: [leaveRequestId], references: [id], onDelete: Cascade)
+  id             String       @id @default(cuid())
   leaveRequestId String
-  
-  approver      User      @relation(name: "LeaveApprover", fields: [approverId], references: [id])
-  approverId    String
-  
-  level         Int       // Approval hierarchy level (1, 2, 3...)
-  status        String    @default("PENDING") // PENDING, APPROVED, REJECTED
-  remarks       String?
-  
-  approvedAt    DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  approverId     String
+  level          Int
+  status         String       @default("PENDING")
+  remarks        String?
+  approvedAt     DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  approver       User         @relation("LeaveApprover", fields: [approverId], references: [id])
+  leaveRequest   LeaveRequest @relation(fields: [leaveRequestId], references: [id], onDelete: Cascade)
 
   @@index([leaveRequestId])
   @@index([approverId])
@@ -427,58 +342,45 @@ model LeaveApproval {
 }
 
 model LeaveApprovalGroup {
-  id            String    @id @default(cuid())
-  department    String    // Department name or ID
-  approvalLevels Int      // Number of approval levels (1, 2, or 3)
-  approverIds   String[]  // JSON array of approver user IDs per level
-  escalationDays Int      @default(5) // Days before escalation
-  active        Boolean   @default(true)
+  id             String   @id @default(cuid())
+  department     String   @unique
+  approvalLevels Int
+  approverIds    String[]
+  escalationDays Int      @default(5)
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([department])
   @@index([active])
 }
 
 model LeavePolicy {
-  id            String    @id @default(cuid())
-  policyName    String
-  companyName   String
-  
-  financialYearStart Int    // Month (1-12)
-  financialYearEnd   Int    // Month (1-12)
-  
-  weekendDays   String[]  // ["SATURDAY", "SUNDAY"]
-  holidayIds    String[]  // Holiday IDs to exclude
-  
-  lopConfiguration Json   // LOP rules and deductions
-  encashmentRules Json    // Rules for encashing leave
-  
-  active        Boolean   @default(true)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  policyName         String
+  companyName        String
+  financialYearStart Int
+  financialYearEnd   Int
+  weekendDays        String[]
+  holidayIds         String[]
+  lopConfiguration   Json
+  encashmentRules    Json
+  active             Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
 
-// ==================== AUDIT LOG ====================
-
 model AuditLog {
-  id            String    @id @default(cuid())
-  user          User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
-  userId        String?
-  
-  action        String    // CREATE, UPDATE, DELETE, LOCK, APPROVE, REJECT, EXPORT
-  entity        String    // Employee, Payroll, TaxDeclaration, etc.
-  entityId      String
-  
-  changes       Json?     // Detailed changes
-  reason        String?
-  
-  ipAddress     String?
-  userAgent     String?
-  
-  createdAt     DateTime  @default(now())
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String
+  changes   Json?
+  reason    String?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([action])
@@ -487,20 +389,78 @@ model AuditLog {
   @@index([createdAt])
 }
 
-// ==================== REPORTING ====================
-
 model PayrollReport {
-  id            String    @id @default(cuid())
-  
-  reportType    String    // SALARY_REGISTER, BANK_TRANSFER, TAX_SUMMARY, COST_ANALYSIS
-  month         Int
-  year          Int
-  
-  generatedBy   String
-  dataSnapshot  Json
-  
-  createdAt     DateTime  @default(now())
+  id           String   @id @default(cuid())
+  reportType   String
+  month        Int
+  year         Int
+  generatedBy  String
+  dataSnapshot Json
+  createdAt    DateTime @default(now())
 
   @@index([reportType])
   @@index([month, year])
+}
+
+model Timesheet {
+  id              String           @id @default(cuid())
+  employeeId      String
+  weekStartDate   DateTime
+  weekEndDate     DateTime
+  status          String           @default("DRAFT")
+  submittedAt     DateTime?
+  approvedAt      DateTime?
+  approvedBy      String?
+  rejectionReason String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  employee        Employee         @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  entries         TimesheetEntry[]
+
+  @@unique([employeeId, weekStartDate])
+  @@index([employeeId])
+  @@index([status])
+}
+
+model TimesheetEntry {
+  id            String    @id @default(cuid())
+  timesheetId   String
+  date          DateTime
+  dayOfWeek     String
+  workHours     Float     @default(0)
+  sickHours     Float     @default(0)
+  personalHours Float     @default(0)
+  totalHours    Float     @default(0)
+  comments      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  timesheet     Timesheet @relation(fields: [timesheetId], references: [id], onDelete: Cascade)
+
+  @@unique([timesheetId, date])
+  @@index([timesheetId])
+}
+
+model LeaveGroup {
+  id          String               @id @default(cuid())
+  name        String               @unique
+  description String?
+  active      Boolean              @default(true)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  employees   Employee[]
+  reviewers   LeaveGroupReviewer[]
+}
+
+model LeaveGroupReviewer {
+  id           String     @id @default(cuid())
+  leaveGroupId String
+  reviewerId   String
+  level        Int
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  leaveGroup   LeaveGroup @relation(fields: [leaveGroupId], references: [id], onDelete: Cascade)
+  reviewer     User       @relation(fields: [reviewerId], references: [id])
+
+  @@unique([leaveGroupId, reviewerId])
+  @@unique([leaveGroupId, level])
 }

@@ -3,12 +3,9 @@
  * Defines roles, permissions, and menu visibility
  */
 
-export enum UserRole {
-  ADMIN = 'ADMIN',
-  HR = 'HR',
-  ACCOUNTS = 'ACCOUNTS',
-  EMPLOYEE = 'EMPLOYEE',
-}
+import { UserRole } from '@/types/models';
+
+export { UserRole };
 
 export enum Permission {
   // Dashboard
@@ -117,7 +114,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.EDIT_PROFILE,
   ],
 
-  [UserRole.ACCOUNTS]: [
+  [UserRole.PAYROLL]: [
     Permission.VIEW_DASHBOARD,
     Permission.VIEW_SALARY_STRUCTURE,
     Permission.VIEW_PAYROLL,
@@ -141,6 +138,17 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.DOWNLOAD_PAYSLIP,
     Permission.VIEW_LEAVE,
     Permission.APPLY_LEAVE,
+    Permission.VIEW_PROFILE,
+    Permission.EDIT_PROFILE,
+  ],
+
+  [UserRole.MANAGER]: [
+    Permission.VIEW_DASHBOARD,
+    Permission.VIEW_PAYSLIPS,
+    Permission.DOWNLOAD_PAYSLIP,
+    Permission.VIEW_LEAVE,
+    Permission.APPLY_LEAVE,
+    Permission.APPROVE_LEAVE,
     Permission.VIEW_PROFILE,
     Permission.EDIT_PROFILE,
   ],
@@ -169,7 +177,7 @@ export const SIDEBAR_MENU: MenuItem[] = [
     id: 'employees',
     label: 'Employee Management',
     icon: 'Users',
-    permissions: [Permission.VIEW_EMPLOYEES],
+    permissions: [Permission.VIEW_EMPLOYEES, Permission.VIEW_LEAVE, Permission.VIEW_ATTENDANCE],
     children: [
       {
         id: 'employees-list',
@@ -198,6 +206,13 @@ export const SIDEBAR_MENU: MenuItem[] = [
         icon: 'Clock',
         href: '/dashboard/leave',
         permissions: [Permission.VIEW_LEAVE],
+      },
+      {
+        id: 'leave-groups',
+        label: 'Leave Groups',
+        icon: 'Settings',
+        href: '/dashboard/leave-groups',
+        permissions: [Permission.MANAGE_SETTINGS],
       },
     ],
   },

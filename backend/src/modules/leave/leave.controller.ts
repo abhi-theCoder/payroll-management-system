@@ -9,11 +9,12 @@ import {
   ApplyLeaveSchema,
   ApproveLeaveSchema,
   RejectLeaveSchema,
-  CreateLeaveTypeSchema,
+  // CreateLeaveTypeSchema,
   UpdateLeavePolicySchema,
 } from './leave.validator';
 import { PrismaClient } from '@prisma/client';
 import { AuditLogger } from '@shared/utils/audit';
+import employeeService from '../employee/service';
 
 export class LeaveController {
   private leaveService: LeaveService;
@@ -23,6 +24,17 @@ export class LeaveController {
     private auditLogger: AuditLogger,
   ) {
     this.leaveService = new LeaveService(prisma);
+  }
+
+  /**
+   * Helper to get employeeId from userId
+   */
+  private async getEmployeeId(userId: string): Promise<string> {
+    const employee = await employeeService.getEmployeeByUserId(userId);
+    if (!employee) {
+      throw new Error('Employee record not found for this user');
+    }
+    return employee.id;
   }
 
   // ==================== EMPLOYEE ENDPOINTS ====================
@@ -41,7 +53,8 @@ export class LeaveController {
         });
       }
 
-      const employeeId = (req as any).user.employeeId;
+      const userId = (req as any).user.id;
+      const employeeId = await this.getEmployeeId(userId);
       const leaveRequest = await this.leaveService.applyLeave(
         employeeId,
         validation.data,
@@ -49,8 +62,10 @@ export class LeaveController {
 
       await this.auditLogger.log({
         action: 'CREATE',
-        entity: 'LeaveRequest',
-        entityId: leaveRequest.id,
+        module: 'LeaveManagement',
+        resourceType: 'LeaveRequest',
+        resourceId: leaveRequest.id,
+        status: 'SUCCESS',
         userId: (req as any).user.id,
         changes: {
           status: 'PENDING',
@@ -58,12 +73,12 @@ export class LeaveController {
         },
       });
 
-      res.status(201).json({
+      return res.status(201).json({
         success: true,
         data: leaveRequest,
       });
     } catch (error: any) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         error: error.message,
       });
@@ -76,15 +91,16 @@ export class LeaveController {
    */
   async getLeaveHistory(req: Request, res: Response) {
     try {
-      const employeeId = (req as any).user.employeeId;
+      const userId = (req as any).user.id;
+      const employeeId = await this.getEmployeeId(userId);
       const history = await this.leaveService.getLeaveHistory(employeeId);
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         data: history,
       });
     } catch (error: any) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         error: error.message,
       });
@@ -97,15 +113,36 @@ export class LeaveController {
    */
   async getLeaveBalance(req: Request, res: Response) {
     try {
-      const employeeId = (req as any).user.employeeId;
+      const userId = (req as any).user.id;
+      const employeeId = await this.getEmployeeId(userId);
       const balance = await this.leaveService.getLeaveBalance(employeeId);
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         data: balance,
       });
     } catch (error: any) {
-      res.status(400).json({
+      return res.status(400).json({
+        success: false,
+        error: error.message,
+      });
+    }
+  }
+
+  /**
+   * Get leave types
+   * GET /leaves/types
+   */
+  async getLeaveTypes(_req: Request, res: Response) {
+    try {
+      const types = await this.leaveService.getLeaveTypes();
+
+      return res.status(200).json({
+        success: true,
+        data: types,
+      });
+    } catch (error: any) {
+      return res.status(400).json({
         success: false,
         error: error.message,
       });
@@ -119,22 +156,25 @@ export class LeaveController {
   async cancelLeave(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const employeeId = (req as any).user.employeeId;
+      const userId = (req as any).user.id;
+      const employeeId = await this.getEmployeeId(userId);
       const cancelledLeave = await this.leaveService.cancelLeave(id, employeeId);
 
       await this.auditLogger.log({
         action: 'CANCEL',
-        entity: 'LeaveRequest',
-        entityId: id,
+        module: 'LeaveManagement',
+        resourceType: 'LeaveRequest',
+        resourceId: id,
+        status: 'SUCCESS',
         userId: (req as any).user.id,
       });
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         data: cancelledLeave,
       });
     } catch (error: any) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         error: error.message,
       });
@@ -156,12 +196,12 @@ export class LeaveController {
         leaveTypeId: leaveTypeId as string,
       });
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         data: pending,
       });
     } catch (error: any) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         error: error.message,
       });
@@ -193,18 +233,20 @@ export class LeaveController {
 
       await this.auditLogger.log({
         action: 'APPROVE',
-        entity: 'LeaveRequest',
-        entityId: id,
+        module: 'LeaveManagement',
+        resourceType: 'LeaveRequest',
+        resourceId: id,
+        status: 'SUCCESS',
         userId: (req as any).user.id,
         changes: { remarks: validation.data.remarks },
       });
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         data: approvedLeave,
       });
     } catch (error: any) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         error: error.message,
       });
@@ -236,18 +278,20 @@ export class LeaveController {
 
       await this.auditLogger.log({
         action: 'REJECT',
-        entity: 'LeaveRequest',
-        entityId: id,
+        module: 'LeaveManagement',
+        resourceType: 'LeaveRequest',
+        resourceId: id,
+        status: 'SUCCESS',
         userId: (req as any).user.id,
         changes: { remarks: validation.data.remarks },
       });
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         data: rejectedLeave,
       });
     } catch (error: any) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         error: error.message,
       });
@@ -276,18 +320,20 @@ export class LeaveController {
 
       await this.auditLogger.log({
         action: 'UPDATE',
-        entity: 'LeavePolicy',
-        entityId: updatedPolicy.id,
+        module: 'LeaveManagement',
+        resourceType: 'LeavePolicy',
+        resourceId: updatedPolicy.id,
+        status: 'SUCCESS',
         userId: (req as any).user.id,
         changes: validation.data,
       });
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         data: updatedPolicy,
       });
     } catch (error: any) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         error: error.message,
       });
@@ -298,17 +344,17 @@ export class LeaveController {
    * Get leave policy
    * GET /leaves/settings/policy
    */
-  async getLeavePolicy(req: Request, res: Response) {
+  async getLeavePolicy(_req: Request, res: Response) {
     try {
       const repository = new (require('./leave.repository').LeaveRepository)(this.prisma);
       const policy = await repository.getLeavePolicy();
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         data: policy,
       });
     } catch (error: any) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         error: error.message,
       });

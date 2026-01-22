@@ -3,7 +3,7 @@
  * For backwards compatibility with existing route structure
  */
 
-import { Router } from 'express';
+// import { Router } from 'express';
 import { prisma } from '@config/database';
 import { AuditLogger } from '@shared/utils/audit';
 import { createLeaveRoutes } from './leave.routes';

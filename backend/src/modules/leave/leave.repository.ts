@@ -4,10 +4,10 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import { LeaveRequestEntity, LeaveBalanceEntity, LeaveTypeEntity } from './domain/leave.entity';
+// import { LeaveRequestEntity, LeaveBalanceEntity, LeaveTypeEntity } from './domain/leave.entity';
 
 export class LeaveRepository {
-  constructor(private prisma: PrismaClient) {}
+  constructor(private prisma: PrismaClient) { }
 
   // ==================== LEAVE REQUEST OPERATIONS ====================
 

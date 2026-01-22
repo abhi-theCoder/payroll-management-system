@@ -73,7 +73,10 @@ async function main() {
 
   const employee = await prisma.employee.upsert({
     where: { employeeId: 'EMP001' },
-    update: {},
+    update: {
+      userId: employeeUser.id,
+      email: employeeUser.email,
+    },
     create: {
       employeeId: 'EMP001',
       userId: employeeUser.id,
@@ -99,6 +102,92 @@ async function main() {
   });
 
   console.log('Sample employee created:', employee.employeeId);
+
+  // Add more sample employees
+  const otherEmployees = [
+    {
+      id: 'EMP002',
+      email: 'jane.smith@company.local',
+      firstName: 'Jane',
+      lastName: 'Smith',
+      department: 'HR',
+      designation: 'HR Specialist',
+      role: 'HR' as const,
+    },
+    {
+      id: 'EMP003',
+      email: 'bob.wilson@company.local',
+      firstName: 'Bob',
+      lastName: 'Wilson',
+      department: 'Engineering',
+      designation: 'DevOps Engineer',
+      role: 'EMPLOYEE' as const,
+    },
+    {
+      id: 'EMP004',
+      email: 'alice.brown@company.local',
+      firstName: 'Alice',
+      lastName: 'Brown',
+      department: 'Marketing',
+      designation: 'Marketing Lead',
+      role: 'EMPLOYEE' as const,
+    },
+    {
+      id: 'EMP005',
+      email: 'charlie.davis@company.local',
+      firstName: 'Charlie',
+      lastName: 'Davis',
+      department: 'Engineering',
+      designation: 'QA Engineer',
+      role: 'EMPLOYEE' as const,
+    },
+  ];
+
+  for (const emp of otherEmployees) {
+    const user = await prisma.user.upsert({
+      where: { email: emp.email },
+      update: {},
+      create: {
+        email: emp.email,
+        password: hashedPassword,
+        firstName: emp.firstName,
+        lastName: emp.lastName,
+        role: emp.role,
+        active: true,
+      },
+    });
+
+    await prisma.employee.upsert({
+      where: { employeeId: emp.id },
+      update: {
+        userId: user.id,
+        email: emp.email,
+        department: emp.department,
+        designation: emp.designation,
+      },
+      create: {
+        employeeId: emp.id,
+        userId: user.id,
+        firstName: emp.firstName,
+        lastName: emp.lastName,
+        email: emp.email,
+        phone: `+91-987654321${otherEmployees.indexOf(emp) + 1}`,
+        dateOfBirth: new Date('1992-08-20'),
+        gender: 'FEMALE',
+        maritalStatus: 'SINGLE',
+        department: emp.department,
+        designation: emp.designation,
+        dateOfJoining: new Date('2021-03-10'),
+        employmentType: 'PERMANENT',
+        panNumber: `BCDAE${1234 + otherEmployees.indexOf(emp)}Z`,
+        aadharNumber: `2345-6789-012${otherEmployees.indexOf(emp)}`,
+        accountNumber: `234567890123456${otherEmployees.indexOf(emp)}`,
+        ifscCode: 'HDFC0000001',
+        status: 'ACTIVE',
+      },
+    });
+    console.log(`Employee created: ${emp.id} - ${emp.firstName} ${emp.lastName}`);
+  }
 
   // Create salary structure
   const salaryStructure = await prisma.salaryStructure.create({
@@ -155,7 +244,81 @@ async function main() {
     await prisma.salaryComponent.create({ data: component });
   }
 
+  // Create Leave Groups
+  const engGroup = await prisma.leaveGroup.upsert({
+    where: { name: 'Engineering Group' },
+    update: {},
+    create: {
+      name: 'Engineering Group',
+      description: 'Leave group for Engineering department',
+      active: true,
+    },
+  });
+
+  // Assign Reviewer (Bob Wilson - Manager) to Engineering Group
+  // Find Bob
+  const bob = await prisma.user.findFirst({ where: { email: 'bob.wilson@company.local' } });
+  if (bob) {
+    await prisma.leaveGroupReviewer.upsert({
+      where: { leaveGroupId_reviewerId: { leaveGroupId: engGroup.id, reviewerId: bob.id } },
+      update: {},
+      create: {
+        leaveGroupId: engGroup.id,
+        reviewerId: bob.id,
+        level: 1,
+      }
+    });
+    console.log('Assigned Bob as reviewer for Engineering Group');
+  }
+
+  // Assign John Doe to Engineering Group
+  await prisma.employee.update({
+    where: { employeeId: 'EMP001' },
+    data: { leaveGroupId: engGroup.id }
+  });
+  console.log('Assigned John Doe to Engineering Group');
+
   console.log('Salary components created');
+
+  // Create default leave types
+  const leaveTypes = [
+    {
+      name: 'Annual Leave',
+      code: 'AL',
+      maxPerYear: 15,
+      carryForward: 5,
+      isCarryForwardAllowed: true,
+      isPaid: true,
+      requiresDocument: false,
+    },
+    {
+      name: 'Sick Leave',
+      code: 'SL',
+      maxPerYear: 10,
+      carryForward: 0,
+      isCarryForwardAllowed: false,
+      isPaid: true,
+      requiresDocument: true,
+    },
+    {
+      name: 'Personal Leave',
+      code: 'PL',
+      maxPerYear: 5,
+      carryForward: 0,
+      isCarryForwardAllowed: false,
+      isPaid: true,
+      requiresDocument: false,
+    }
+  ];
+
+  for (const type of leaveTypes) {
+    await prisma.leaveType.upsert({
+      where: { code: type.code },
+      update: {},
+      create: type,
+    });
+  }
+  console.log('Leave types created');
 
   console.log('Database seeded successfully!');
 }

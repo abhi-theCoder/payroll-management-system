@@ -11,6 +11,9 @@ import taxRoutes from '@modules/tax/routes';
 import payrollRoutes from '@modules/payroll/routes';
 import payslipRoutes from '@modules/payslip/routes';
 import reportsRoutes from '@modules/reports/routes';
+import timesheetRoutes from '@modules/timesheet/timesheet.routes';
+import leaveGroupRoutes from '@modules/leave/leave-group.routes';
+import leaveRoutes from '@modules/leave/routes';
 
 const router = Router();
 
@@ -23,5 +26,8 @@ router.use('/tax', taxRoutes);
 router.use('/payroll', payrollRoutes);
 router.use('/payslips', payslipRoutes);
 router.use('/reports', reportsRoutes);
+router.use('/timesheet', timesheetRoutes);
+router.use('/leave-groups', leaveGroupRoutes);
+router.use('/leave', leaveRoutes);
 
 export default router;

@@ -37,10 +37,11 @@ export interface ChangePasswordRequest {
 }
 
 export enum UserRole {
-  ADMIN = 'admin',
-  HR = 'hr',
-  PAYROLL = 'payroll',
-  EMPLOYEE = 'employee',
+  ADMIN = 'ADMIN',
+  HR = 'HR',
+  PAYROLL = 'PAYROLL',
+  EMPLOYEE = 'EMPLOYEE',
+  MANAGER = 'MANAGER',
 }
 
 // Employee
@@ -94,7 +95,7 @@ export interface CreateEmployeeRequest {
   workingDaysPerWeek?: number;
 }
 
-export interface UpdateEmployeeRequest extends Partial<CreateEmployeeRequest> {}
+export interface UpdateEmployeeRequest extends Partial<CreateEmployeeRequest> { }
 
 // Salary
 export interface SalaryStructure {
@@ -139,7 +140,7 @@ export interface CreateSalaryStructureRequest {
   effectiveFrom: Date;
 }
 
-export interface UpdateSalaryStructureRequest extends Partial<CreateSalaryStructureRequest> {}
+export interface UpdateSalaryStructureRequest extends Partial<CreateSalaryStructureRequest> { }
 
 // Payroll
 export interface PayrollRun {
@@ -236,7 +237,7 @@ export interface CreateTaxDeclarationRequest {
   otherDeductions: number;
 }
 
-export interface UpdateTaxDeclarationRequest extends Partial<CreateTaxDeclarationRequest> {}
+export interface UpdateTaxDeclarationRequest extends Partial<CreateTaxDeclarationRequest> { }
 
 export enum TaxStatus {
   DRAFT = 'draft',

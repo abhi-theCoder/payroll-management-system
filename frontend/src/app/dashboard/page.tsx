@@ -4,12 +4,14 @@ import { DashboardLayout } from '@/components/DashboardLayout';
 import { ProfessionalDashboard } from '@/components/ProfessionalDashboard';
 import { useAuth } from '@/hooks/useAuth';
 import { COLORS } from '@/config/theme';
+import Link from 'next/link';
+import { UserRole } from '@/types/models';
 
 export default function DashboardPage() {
   const { user } = useAuth();
 
   // Only ADMIN sees the full dashboard with tiles
-  if (user && user.role === 'ADMIN') {
+  if (user && user.role === UserRole.ADMIN) {
     return (
       <DashboardLayout>
         <ProfessionalDashboard />
@@ -76,33 +78,39 @@ export default function DashboardPage() {
               Quick Links
             </h2>
             <div className="space-y-3">
-              <button
-                className="w-full py-3 px-4 rounded-lg text-left font-medium transition"
-                style={{
-                  backgroundColor: 'rgb(30, 82, 143)',
-                  color: '#FFFFFF',
-                }}
-              >
-                📋 View My Payslips
-              </button>
-              <button
-                className="w-full py-3 px-4 rounded-lg text-left font-medium transition border"
-                style={{
-                  borderColor: COLORS.border,
-                  color: 'rgb(30, 58, 138)',
-                }}
-              >
-                📊 View Salary Structure
-              </button>
-              <button
-                className="w-full py-3 px-4 rounded-lg text-left font-medium transition border"
-                style={{
-                  borderColor: COLORS.border,
-                  color: 'rgb(30, 58, 138)',
-                }}
-              >
-                🎫 Apply Leave
-              </button>
+              <Link href="/dashboard/payslips" className="block">
+                <button
+                  className="w-full py-3 px-4 rounded-lg text-left font-medium transition"
+                  style={{
+                    backgroundColor: 'rgb(30, 82, 143)',
+                    color: '#FFFFFF',
+                  }}
+                >
+                  📋 View My Payslips
+                </button>
+              </Link>
+              <Link href="/dashboard/salary" className="block">
+                <button
+                  className="w-full py-3 px-4 rounded-lg text-left font-medium transition border"
+                  style={{
+                    borderColor: COLORS.border,
+                    color: 'rgb(30, 58, 138)',
+                  }}
+                >
+                  📊 View Salary Structure
+                </button>
+              </Link>
+              <Link href="/dashboard/leave?tab=apply" className="block">
+                <button
+                  className="w-full py-3 px-4 rounded-lg text-left font-medium transition border"
+                  style={{
+                    borderColor: COLORS.border,
+                    color: 'rgb(30, 58, 138)',
+                  }}
+                >
+                  🎫 Apply Leave
+                </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -153,4 +161,4 @@ export default function DashboardPage() {
     </DashboardLayout>
   );
 }
-         
+
