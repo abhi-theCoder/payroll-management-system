@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Calendar, AlertCircle, Plus, Edit, Loader2, CheckCircle2 } from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/DashboardLayout';
@@ -12,7 +12,7 @@ import { UserRole } from '@/types/models';
 
 type TabType = 'balance' | 'apply' | 'history' | 'approvals' | 'settings';
 
-export default function LeaveManagementPage() {
+function LeaveManagementContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user } = useAuth();
@@ -334,8 +334,8 @@ export default function LeaveManagementPage() {
                                 <td className="px-4 py-3 text-gray-600 max-w-xs truncate">{leave.reason}</td>
                                 <td className="px-4 py-3 text-center">
                                   <span className={`px-2 py-1 rounded-full text-xs font-bold ${leave.status === 'APPROVED' ? 'bg-green-100 text-green-700' :
-                                      leave.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
-                                        'bg-amber-100 text-amber-700'
+                                    leave.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
+                                      'bg-amber-100 text-amber-700'
                                     }`}>
                                     {leave.status}
                                   </span>
@@ -361,5 +361,19 @@ export default function LeaveManagementPage() {
         </div>
       </DashboardLayout>
     </RouteGuard>
+  );
+}
+
+export default function LeaveManagementPage() {
+  return (
+    <Suspense fallback={
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="animate-spin text-teal-600" size={40} />
+        </div>
+      </DashboardLayout>
+    }>
+      <LeaveManagementContent />
+    </Suspense>
   );
 }
