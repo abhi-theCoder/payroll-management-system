@@ -8,12 +8,11 @@ RUN apk add --no-cache python3 make g++
 
 # Copy package files
 COPY package*.json ./
-COPY prisma ./prisma/
 
 # Install all dependencies (including dev)
 RUN npm install
 
-# Copy source code
+# Copy everything else (including prisma folder)
 COPY . .
 
 # Generate Prisma client and build the app
@@ -39,9 +38,8 @@ ENV NODE_ENV=production
 
 WORKDIR /app
 
-# Copy package files and prisma
+# Copy package files
 COPY package*.json ./
-COPY prisma ./prisma/
 
 # Install only production dependencies
 RUN npm ci --only=production
@@ -49,6 +47,7 @@ RUN npm ci --only=production
 # Copy built application and prisma client from builder
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/prisma ./prisma
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs
