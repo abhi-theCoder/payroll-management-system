@@ -1,12 +1,10 @@
 {
     "version": 2,
-    "builds": [
-        {
-            "src": "frontend/package.json",
-            "use": "@vercel/next"
-        }
-    ],
+    "buildCommand": "npm run build",
+    "outputDirectory": ".next",
     "framework": "nextjs",
+    "installCommand": "npm install",
+    "rootDirectory": "frontend",
     "env": {
         "NEXT_PUBLIC_APP_NAME": "Payroll Management System"
     },
