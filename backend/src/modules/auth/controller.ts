@@ -87,6 +87,14 @@ export class AuthController {
       message: 'Password changed successfully',
     });
   }
+
+  /**
+   * Get current user
+   */
+  async getMe(req: Request, res: Response): Promise<void> {
+    const result = await authService.getCurrentUser(req.user!.id);
+    res.status(200).json(result);
+  }
 }
 
 export default new AuthController();

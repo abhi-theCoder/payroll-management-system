@@ -51,7 +51,7 @@ export class TimesheetService {
                 const entryDate = new Date(entry.date);
                 entryDate.setHours(0, 0, 0, 0);
 
-                const totalHours = (entry.workHours || 0) + (entry.sickHours || 0) + (entry.personalHours || 0);
+                const totalHours = (entry.workHours || 0) + (entry.sickHours || 0) + (entry.personalHours || 0) + (entry.annualLeaveHours || 0);
 
                 // Check if entry exists for this date/timesheet
                 const existing = await tx.timesheetEntry.findFirst({
@@ -68,6 +68,7 @@ export class TimesheetService {
                             workHours: entry.workHours,
                             sickHours: entry.sickHours,
                             personalHours: entry.personalHours,
+                            annualLeaveHours: entry.annualLeaveHours,
                             totalHours: totalHours,
                             comments: entry.comments,
                             dayOfWeek: entry.dayOfWeek
@@ -82,6 +83,7 @@ export class TimesheetService {
                             workHours: entry.workHours,
                             sickHours: entry.sickHours,
                             personalHours: entry.personalHours,
+                            annualLeaveHours: entry.annualLeaveHours,
                             totalHours: totalHours,
                             comments: entry.comments,
                         }

@@ -29,4 +29,9 @@ router.post('/logout', authenticate, (req, res, next) => authController.logout(r
  */
 router.post('/change-password', authenticate, (req, res, next) => authController.changePassword(req, res).catch(next));
 
+/**
+ * GET /auth/me - Get current user info
+ */
+router.get('/me', authenticate, (req, res, next) => authController.getMe(req, res).catch(next));
+
 export default router;

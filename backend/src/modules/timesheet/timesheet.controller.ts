@@ -39,14 +39,30 @@ export const getTimesheet = async (req: Request, res: Response) => {
 };
 
 export const getMyTimesheet = async (req: Request, res: Response) => {
-    const { employeeId } = req.params; // Or from auth token
-    const { weekStartDate } = req.query;
+    let { employeeId } = req.params;
+    if (!employeeId) {
+        employeeId = req.query.employeeId as string;
+    }
+    const { weekStartDate, date } = req.query;
+    const startDate = (weekStartDate || date) as string;
 
-    if (!weekStartDate) return res.status(400).json({ error: "Week start date required" });
+    if (!employeeId) return res.status(400).json({ error: "Employee ID required" });
+    if (!startDate) return res.status(400).json({ error: "Start date required" });
 
     try {
-        const timesheet = await service.getTimesheetByWeek(employeeId, new Date(weekStartDate as string));
-        return res.json(timesheet || { entries: [] }); // Return empty structure or null
+        const timesheet = await service.getTimesheetByWeek(employeeId, new Date(startDate));
+
+        // VISIBILITY LOGIC: If I am an Admin and this is not my own timesheet, 
+        // I should only see it if it's NOT in DRAFT status.
+        if (timesheet && req.user?.role === 'ADMIN') {
+            // Better: Get the employee record for the current user and compare IDs
+            const currentEmployee = await prisma.employee.findUnique({ where: { userId: req.user.id } });
+            if (currentEmployee && timesheet.employeeId !== currentEmployee.id && timesheet.status === 'DRAFT') {
+                return res.json({ entries: [], status: 'DRAFT' }); // Hide content
+            }
+        }
+
+        return res.json(timesheet || { entries: [] });
     } catch (e: any) {
         return res.status(500).json({ error: e.message });
     }

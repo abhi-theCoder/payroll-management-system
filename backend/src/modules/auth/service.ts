@@ -90,6 +90,11 @@ export class AuthService {
       },
     });
 
+    // Get associated employee if exists
+    const employee = await prisma.employee.findUnique({
+      where: { userId: user.id },
+    });
+
     // Generate tokens
     const token = this.generateToken({ id: user.id, email: user.email, role: user.role });
     const refreshToken = this.generateRefreshToken({ id: user.id });
@@ -101,6 +106,7 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
+        employeeId: employee?.id,
       },
       token,
       refreshToken,
@@ -198,6 +204,32 @@ export class AuthService {
       where: { id: userId },
       data: { password: hashedPassword },
     });
+  }
+
+  /**
+   * Get current user info
+   */
+  async getCurrentUser(userId: string): Promise<any> {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const employee = await prisma.employee.findUnique({
+      where: { userId: user.id },
+    });
+
+    return {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+      employeeId: employee?.id,
+    };
   }
 
   /**

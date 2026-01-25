@@ -59,6 +59,7 @@ export enum Permission {
   // Profile
   VIEW_PROFILE = 'VIEW_PROFILE',
   EDIT_PROFILE = 'EDIT_PROFILE',
+  VIEW_TIMESHEET = 'VIEW_TIMESHEET',
 }
 
 // Role to Permissions Mapping
@@ -95,6 +96,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.APPROVE_LEAVE,
     Permission.VIEW_PROFILE,
     Permission.EDIT_PROFILE,
+    Permission.VIEW_TIMESHEET,
   ],
 
   [UserRole.HR]: [
@@ -112,6 +114,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.APPROVE_LEAVE,
     Permission.VIEW_PROFILE,
     Permission.EDIT_PROFILE,
+    Permission.VIEW_TIMESHEET,
   ],
 
   [UserRole.PAYROLL]: [
@@ -130,6 +133,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.EXPORT_REPORTS,
     Permission.VIEW_PROFILE,
     Permission.EDIT_PROFILE,
+    Permission.VIEW_TIMESHEET,
   ],
 
   [UserRole.EMPLOYEE]: [
@@ -140,6 +144,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.APPLY_LEAVE,
     Permission.VIEW_PROFILE,
     Permission.EDIT_PROFILE,
+    Permission.VIEW_TIMESHEET,
   ],
 
   [UserRole.MANAGER]: [
@@ -151,6 +156,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.APPROVE_LEAVE,
     Permission.VIEW_PROFILE,
     Permission.EDIT_PROFILE,
+    Permission.VIEW_TIMESHEET,
   ],
 };
 
@@ -213,6 +219,13 @@ export const SIDEBAR_MENU: MenuItem[] = [
         icon: 'Settings',
         href: '/dashboard/leave-groups',
         permissions: [Permission.MANAGE_SETTINGS],
+      },
+      {
+        id: 'timesheets',
+        label: 'Timesheet Management',
+        icon: 'FileSpreadsheet',
+        href: '/dashboard/timesheet',
+        permissions: [Permission.VIEW_TIMESHEET],
       },
     ],
   },

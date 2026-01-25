@@ -427,10 +427,11 @@ model TimesheetEntry {
   timesheetId   String
   date          DateTime
   dayOfWeek     String
-  workHours     Float     @default(0)
-  sickHours     Float     @default(0)
-  personalHours Float     @default(0)
-  totalHours    Float     @default(0)
+  workHours         Float     @default(0)
+  sickHours         Float     @default(0)
+  personalHours     Float     @default(0)
+  annualLeaveHours  Float     @default(0)
+  totalHours        Float     @default(0)
   comments      String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt

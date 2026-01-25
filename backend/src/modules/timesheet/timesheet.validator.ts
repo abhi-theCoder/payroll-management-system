@@ -11,6 +11,7 @@ export const TimesheetEntrySchema = z.object({
     workHours: z.number().min(0).max(24).default(0),
     sickHours: z.number().min(0).max(8).default(0),
     personalHours: z.number().min(0).max(8).default(0),
+    annualLeaveHours: z.number().min(0).max(8).default(0),
     comments: z.string().optional(),
 }).refine((data) => {
     if (data.sickHours > 0 && data.sickHours !== 8) {
@@ -19,10 +20,13 @@ export const TimesheetEntrySchema = z.object({
     if (data.personalHours > 0 && data.personalHours !== 8) {
         return false;
     }
+    if (data.annualLeaveHours > 0 && data.annualLeaveHours !== 8) {
+        return false;
+    }
     return true;
 }, {
-    message: "Sick and Personal leave hours must be exactly 8 hours or 0",
-    path: ["sickHours", "personalHours"] // broad path
+    message: "Sick, Personal, and Annual leave hours must be exactly 8 hours or 0",
+    path: ["sickHours", "personalHours", "annualLeaveHours"]
 });
 
 export const SubmitTimesheetSchema = z.object({
